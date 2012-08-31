@@ -1,0 +1,18 @@
+# -*- coding: utf-8 -*-
+listen_port = 0
+tasks_delay = 0
+
+def config():
+    import sys, thread
+    set_hosts, Forward = import_from('util')
+    set_hosts('.googlecode.com', ('203.208.46.1', '203.208.46.2', '203.208.46.3', '203.208.46.4', '203.208.46.5', '203.208.46.6', '203.208.46.7', '203.208.46.8'))
+    DEFAULT = Forward()
+    files = sys.argv[2:]
+    if files:
+        PacFile = import_from('pac')
+        rulelist = ['http://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini']
+        PacFile([[rulelist, 'PROXY 127.0.0.1:8086']], [], files)
+    add_task(thread.interrupt_main, 1)
+    def find_proxy_handler(req):
+        return DEFAULT
+    return find_proxy_handler
