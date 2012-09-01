@@ -4,7 +4,7 @@ set uploaddir=python
 
 ( 
     echo ===============================================================
-    echo  GoAgent服务端部署程序, 开始上传%uploaddir%服务端
+    echo  WallProxy服务端部署程序, 开始上传%uploaddir%服务端
     echo  如果需要上传golang服务端, 请修改本文件的uploaddir的值为golang
     echo ===============================================================
     echo.
@@ -12,7 +12,7 @@ set uploaddir=python
 ) && (
     @cd /d "%~dp0" 
 ) && (
-    "..\local\python.exe" uploader.zip
+    "..\local\python.exe" uploader
 ) && (
     echo.
     echo 上传成功，请编辑proxy.ini把你的appid填进去，谢谢。请按任意键退出程序。
@@ -20,6 +20,4 @@ set uploaddir=python
 
 @pause>NUL
 
-  
-  
 @echo off

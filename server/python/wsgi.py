@@ -3,10 +3,10 @@
 # Contributor:
 #      Phus Lu        <phus.lu@gmail.com>
 
-__version__ = '1.10.0'
+__version__ = '1.10.1'
 __password__ = ''
 
-import sys, os, re, time, struct, zlib, binascii, logging, httplib, urlparse
+import sys, os, time, struct, zlib, binascii, logging, httplib, urlparse
 try:
     from google.appengine.api import urlfetch
     from google.appengine.runtime import apiproxy_errors, DeadlineExceededError
@@ -22,7 +22,6 @@ except:
     socket = None
 
 FetchMax = 3
-FetchMaxSize = 1024*1024*4
 Deadline = 30
 
 def io_copy(source, dest):
@@ -80,32 +79,6 @@ def httplib_request(method, url, body=None, headers={}, timeout=None):
     response = conn.getresponse()
     return response
 
-def httplib_normalize_headers(response_headers, skip_headers=[]):
-    """return (headers, content_encoding, transfer_encoding)"""
-    headers = []
-    for keyword, value in response_headers:
-        if keyword.title() in skip_headers:
-            continue
-        if keyword == 'connection':
-            headers.append(('Connection', 'close'))
-        elif keyword != 'set-cookie':
-            headers.append((keyword.title(), value))
-        else:
-            scs = value.split(', ')
-            cookies = []
-            i = -1
-            for sc in scs:
-                if re.match(r'[^ =]+ ', sc):
-                    try:
-                        cookies[i] = '%s, %s' % (cookies[i], sc)
-                    except IndexError:
-                        pass
-                else:
-                    cookies.append(sc)
-                    i += 1
-            headers += [('Set-Cookie', x) for x in cookies]
-    return headers
-
 def paas_application(environ, start_response):
     cookie  = environ['HTTP_COOKIE']
     request = decode_data(zlib.decompress(cookie.decode('base64')))
@@ -122,9 +95,7 @@ def paas_application(environ, start_response):
     if method != 'CONNECT':
         try:
             response = httplib_request(method, url, body=data, headers=headers, timeout=16)
-
             status_line = '%d %s' % (response.status, httplib.responses.get(response.status, 'OK'))
-            headers = httplib_normalize_headers(response.getheaders(), skip_headers=['Transfer-Encoding'])
 
             gzipped = False
 ##            if response.getheader('content-encoding') != 'gzip' and response.getheader('content-length'):
@@ -132,7 +103,7 @@ def paas_application(environ, start_response):
 ##                    headers += [('Content-Encoding', 'gzip')]
 ##                    gzipped = True
 
-            start_response(status_line, headers)
+            start_response(status_line, response.getheaders())
             return fileobj_to_generator(response, gzipped=gzipped)
         except httplib.HTTPException as e:
             raise
@@ -299,7 +270,12 @@ def gae_post(environ, start_response):
                 response.headers['content-length'] = len(response.content)
                 break
             else:
-                headers['Range'] = 'bytes=0-%d' % FetchMaxSize
+                range = request.pop('range', None)
+                if range:
+                    headers['Range'] = range
+                else:
+                    errors.append(str(e))
+                    return send_notify(start_response, method, url, 500, 'Python Server: Urlfetch error: %s' % errors)
             deadline = Deadline * 2
         except Exception, e:
             errors.append(str(e))
@@ -308,36 +284,20 @@ def gae_post(environ, start_response):
     else:
         return send_notify(start_response, method, url, 500, 'Python Server: Urlfetch error: %s' % errors)
 
-    headers = response.headers
-    if 'set-cookie' in headers:
-        scs = headers['set-cookie'].split(', ')
-        cookies = []
-        i = -1
-        for sc in scs:
-            if re.match(r'[^ =]+ ', sc):
-                try:
-                    cookies[i] = '%s, %s' % (cookies[i], sc)
-                except IndexError:
-                    pass
-            else:
-                cookies.append(sc)
-                i += 1
-        headers['set-cookie'] = '\r\nSet-Cookie: '.join(cookies)
-    headers['connection'] = 'close'
-    return send_response(start_response, response.status_code, headers, response.content)
+    return send_response(start_response, response.status_code, response.headers, response.content)
 
 def gae_get(environ, start_response):
     timestamp = long(os.environ['CURRENT_VERSION_ID'].split('.')[1])/pow(2,28)
     ctime = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(timestamp+8*3600))
     html = u'Python Fetch Server %s \u5df2\u7ecf\u5728\u5de5\u4f5c\u4e86\uff0c\u90e8\u7f72\u65f6\u95f4 %s\n' % (__version__, ctime)
-    start_response('200 OK', [('Content-type', 'text/plain; charset=utf-8')])
+    start_response('200 OK', [('Content-Type', 'text/plain; charset=utf-8')])
     return [html.encode('utf8')]
 
 def app(environ, start_response):
     if urlfetch and environ['REQUEST_METHOD'] == 'POST':
         return gae_post(environ, start_response)
     elif not urlfetch:
-        if environ['PATH_INFO'] == 'socks5':
+        if environ['PATH_INFO'] == '/socks5':
             return paas_socks5(environ, start_response)
         else:
             return paas_application(environ, start_response)
@@ -365,4 +325,3 @@ if __name__ == '__main__':
     server.environ.pop('SERVER_SOFTWARE')
     logging.info('serving %s://%s:%s/wsgi.py', 'https' if ssl_args else 'http', server.address[0] or '0.0.0.0', server.address[1])
     server.serve_forever()
-

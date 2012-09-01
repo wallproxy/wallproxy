@@ -1,0 +1,17 @@
+# -*- coding: utf-8 -*-
+import sys, StringIO
+stdout, sys.stdout = sys.stdout, StringIO.StringIO()
+listen_port = 0
+def config():
+    import sys, os.path as ospath
+    set_hosts = import_from('util')
+    set_hosts('.google.com', '203.208.46.1 203.208.46.2 203.208.46.3 203.208.46.4 203.208.46.5 203.208.46.6 203.208.46.7 203.208.46.8 74.125.71.83 74.125.71.18 74.125.71.17 74.125.71.19')
+    sys.stdout = config['stdout']
+    sys.path.append(ospath.join(ospath.dirname(__file__), 'uploader.zip'))
+    def main():
+        from appcfg import main
+        try:
+            main()
+        except KeyboardInterrupt:
+            pass
+    add_task(main)
