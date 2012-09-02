@@ -1,4 +1,4 @@
-wallproxy-plus
+wallproxy
 ==============
 
 New version of wallproxy.
