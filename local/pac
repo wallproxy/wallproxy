@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+# default PROXY_TARGET is ('127.0.0.1', 8086), if you want to generate pac with
+# other address, please modify PROXY_TARGET, if not, keep it default.
+PROXY_TARGET = ('127.0.0.1', 8086)
+
+# DO NOT MODIFY CODE BELOW!!
 listen_port = 0
 def config():
     import sys
@@ -10,7 +15,16 @@ def config():
             del httpd.__class__.server_address
         except AttributeError:
             pass
-        httpd.server_address = ('127.0.0.1', 8086)
+        default = eval('KCcxMjcuMC4wLjEnLDgwODYp'.decode('base64'))
+        if config['PROXY_TARGET'] != default:
+            httpd.server_address = config['PROXY_TARGET']
+        else:
+            from os.path import dirname, join
+            try:
+                execfile(join(dirname(config['__file__']), 'config.py'), config)
+            except:
+                pass
+            httpd.server_address = config.vget(str, 'listen_ip', '') or default[0], config.vget(int, 'listen_port', default[1])
         PacFile = import_from('pac')
         rulelist = ['http://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini']
         PacFile([[rulelist, 'PROXY *:*; DIRECT']], [], files)
