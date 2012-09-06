@@ -24,7 +24,7 @@ def config():
                 execfile(join(dirname(config['__file__']), 'config.py'), config)
             except:
                 pass
-            httpd.server_address = config.vget(str, 'listen_ip', '') or default[0], config.vget(int, 'listen_port', default[1])
+            httpd.server_address = config.vget(str, 'listen_ip', default[0]) or '0.0.0.0', config.vget(int, 'listen_port', default[1])
         PacFile = import_from('pac')
         rulelist = ['http://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini']
         PacFile([[rulelist, 'PROXY *:*; DIRECT']], [], files)
