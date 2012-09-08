@@ -28,17 +28,14 @@ function show_editor(div, title, file) {
 		crlf = '\n';
 	}
 	editor = CodeMirror.fromTextArea(div.find('.code_box')[0], editor);
-	var code = '';
-	$(document).on('pageshow', div, function(){
-		editor.setValue(code);
-		$.get(file, function(data) {code = data; editor.setValue(data);});
+	div.on('pageshow', function(){
+		$.get(file, function(data) {editor.setValue(data);});
 	});
 	div.find('.save_btn').click(function() {
 		if (!confirm('保存配置并重启程序？')) return false;
-		code = editor.getValue(crlf);
 		$.mobile.loadingMessageTextVisible = true;
 		$.mobile.showPageLoadingMsg('a', '保存文件...');
-		$.post(file, code, function(data) {
+		$.post(file, editor.getValue(crlf), function(data) {
 			if (data != 'OK') {
 				alert('保存失败: ' + data);
 				$.mobile.hidePageLoadingMsg();
