@@ -2,7 +2,7 @@ $(document).on('pageinit', '#save', function(){
 $('#restart_btn').click(function() {
 	$.mobile.loadingMessageTextVisible = true;
 	$.mobile.showPageLoadingMsg('a', '正在重启...');
-	$.get('/restart', function(data) {
+	$.get('/restart?'+Math.random(), function(data) {
 		setTimeout(function() {
 			$.mobile.hidePageLoadingMsg();
 			$('.ui-dialog').dialog('close');
@@ -29,7 +29,7 @@ function show_editor(div, title, file) {
 	}
 	editor = CodeMirror.fromTextArea(div.find('.code_box')[0], editor);
 	div.on('pageshow', function(){
-		$.get(file, function(data) {editor.setValue(data);});
+		$.get(file+'?'+Math.random(), function(data) {editor.setValue(data);});
 	});
 	div.find('.save_btn').click(function() {
 		if (!confirm('保存配置并重启程序？')) return false;
@@ -42,7 +42,7 @@ function show_editor(div, title, file) {
 				return false;
 			}
 			$.mobile.showPageLoadingMsg('a', '重启程序...');
-			$.get('/restart', function(data) {
+			$.get('/restart?'+Math.random(), function(data) {
 				setTimeout(function() {
 					$.mobile.hidePageLoadingMsg();
 					history.back();
