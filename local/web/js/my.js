@@ -16,10 +16,11 @@ function show_editor(div, title, file) {
 	var elem = document.getElementById('editor_tmpl');
 	div.html((elem.value || elem.innerHTML).replace('{{title}}', title));
 	$('home_list').listview('refresh');
-	var editor = {mode: 'text/x-ini'}, crlf = '\r\n';
+	var editor = {mode: 'text/x-ini', lineWrapping: true, lineNumbers: true}, crlf = '\r\n';
 	if (file.match('\.py$')) {
 		editor = {
 			mode: {name:'python', version:2, singleLineStringErrors:false},
+			lineWrapping: true,
 			lineNumbers: true,
 			indentUnit: 4,
 			tabMode: 'shift',
