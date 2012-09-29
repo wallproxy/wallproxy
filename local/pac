@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # PROXY_TARGET ('', 0) means get config from config.py, if you want to generate
 # pac with other address, please modify PROXY_TARGET, if not, keep it default.
-PROXY_TARGET = ('', 0)
+PROXY_TARGET = ('127.0.0.1', 8087)
 
 # DO NOT MODIFY CODE BELOW!!
 listen_port = 0
@@ -28,5 +28,7 @@ def config():
                 port = config.vget(int, 'listen_port', 8086)
         httpd.server_address = ip, port
         PacFile = import_from('pac')
-        rulelist = ['http://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini']
-        PacFile([[rulelist, 'PROXY *:*; DIRECT']], [], files)
+        rulelist = (
+            (['http://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini'], 'PROXY *:*; DIRECT'),
+        )
+        PacFile(rulelist, [], files, 'DIRECT')
