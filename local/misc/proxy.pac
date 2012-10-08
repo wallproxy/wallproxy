@@ -1,7 +1,8 @@
 //proxy auto-config
 function FindProxyForURL(url, host) {
-	if (host == '127.0.0.1' || host == 'localhost') return 'DIRECT';
-	return FindProxyByRules(url, host);
+	if (/^https?:\/\//i.test(url) && host != '127.0.0.1' && host != 'localhost')
+		return FindProxyByRules(url, host);
+	return 'DIRECT';
 }
 
 // AUTO-GENERATED RULES WITH wallproxy BY HustMoon, DO NOT MODIFY!
