@@ -8,7 +8,7 @@ listen_port = 0
 def config():
     import sys
     set_hosts = import_from('util')
-    set_hosts('.googlecode.com', '203.208.46.1 203.208.46.2 203.208.46.3 203.208.46.4 203.208.46.5 203.208.46.6 203.208.46.7 203.208.46.8')
+    set_hosts('.googlecode.com', '203.208.47.160 203.208.47.161 203.208.47.162 203.208.47.163 203.208.47.164 203.208.47.165 203.208.47.166 203.208.47.167')
     files = sys.argv[2:]
     if files:
         try:
