@@ -3,16 +3,12 @@ import sys, StringIO
 stdout, sys.stdout = sys.stdout, StringIO.StringIO()
 listen_port = 0
 def config():
-    import sys, os, os.path as ospath
+    import sys, os, os.path as ospath, urllib
     set_hosts = import_from('util')
-    set_hosts('.google.com', 'www.google.com www.l.google.com mail.l.google.com mail.google.com maps.l.google.com maps.google.com 203.208.47.160 203.208.47.161 203.208.47.162 203.208.47.163 203.208.47.164 203.208.47.165 203.208.47.166 203.208.47.167')
     proxy = None
-    # proxy = 'http://127.0.0.1:8086'
-    if proxy:
-        os.environ['http_proxy'] = os.environ['https_proxy'] = proxy
-    else:
-        os.environ.pop('http_proxy', None)
-        os.environ.pop('https_proxy', None)
+    # proxy = '127.0.0.1:8086'
+    set_hosts('.google.com', 'www.google.com www.l.google.com mail.l.google.com mail.google.com maps.l.google.com maps.google.com 203.208.47.160 203.208.47.161 203.208.47.162 203.208.47.163 203.208.47.164 203.208.47.165 203.208.47.166 203.208.47.167')
+    urllib.getproxies = lambda: proxy and {'http':'http://%s'%proxy, 'https':'https://%s'%proxy} or {}
     sys.stdout = config['stdout']
     sys.path.append(ospath.join(ospath.dirname(__file__), 'uploader.zip'))
     def main():
