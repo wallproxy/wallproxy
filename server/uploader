@@ -6,7 +6,7 @@ def config():
     import sys, os, os.path as ospath, urllib
     set_hosts = import_from('util')
     proxy = None
-    # proxy = '127.0.0.1:8086'
+    # proxy = '127.0.0.1:8087'
     set_hosts('.google.com', 'www.google.com www.l.google.com mail.l.google.com mail.google.com maps.l.google.com maps.google.com')
     urllib.getproxies = lambda: proxy and {'http':'http://%s'%proxy, 'https':'https://%s'%proxy} or {}
     sys.stdout = config['stdout']
