@@ -5,12 +5,16 @@ listen_port = 0
 def config():
     import sys, os, os.path as ospath, urllib
     set_hosts = import_from('util')
-    proxy = None
-    # proxy = '127.0.0.1:8087'
-    set_hosts('.google.com', 'www.google.com www.l.google.com mail.l.google.com mail.google.com maps.l.google.com maps.google.com')
-    urllib.getproxies = lambda: proxy and {'http':'http://%s'%proxy, 'https':'https://%s'%proxy} or {}
     sys.stdout = config['stdout']
-    sys.path.append(ospath.join(ospath.dirname(__file__), 'uploader.zip'))
+    del sys.argv[0]; sys.modules.pop('google', None)
+    dir = ospath.abspath(ospath.dirname(__file__))
+    os.chdir(dir)
+    sys.path.insert(0, ospath.join(dir, 'uploader.zip'))
+    set_hosts('.google.com', 'www.google.com www.l.google.com mail.l.google.com mail.google.com maps.l.google.com maps.google.com')
+    proxy = raw_input('Set proxy? (0)No  (1)127.0.0.1:8087  (Other)Your input\nIf 127.0.0.1:8087, make sure your wallproxy is running: ').strip()
+    proxy = '' if proxy == '0' else ('127.0.0.1:8087' if proxy == '1' else proxy)
+    if proxy: print('Upload with proxy %r' % proxy)
+    urllib.getproxies = lambda: proxy and {'http':'http://%s'%proxy, 'https':'https://%s'%proxy} or {}
     from appcfg import init; install('init', init)
     def main():
         from appcfg import main

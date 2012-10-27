@@ -213,7 +213,7 @@ def send_response(start_response, status, headers, content, content_type='image/
         data = ['1', zlib.compress('%s%s%s' % (struct.pack('>3I', status, len(strheaders), len(content)), strheaders, content))]
     else:
         data = ['0', struct.pack('>3I', status, len(strheaders), len(content)), strheaders, content]
-    start_response('200 OK', [('Content-type', content_type), ('Connection', 'close')])
+    start_response('200 OK', [('Content-type', content_type), ('Connection', 'keep-alive')])
     return data
 
 def send_notify(start_response, method, url, status, content):
