@@ -21,7 +21,7 @@ try:
 except:
     socket = None
 
-FetchMax = 3
+FetchMax = 2
 Deadline = 30
 
 def io_copy(source, dest):
@@ -252,12 +252,12 @@ def gae_post(environ, start_response):
             errors.append(str(e))
             logging.error('DeadlineExceededError(deadline=%s, url=%r)', deadline, url)
             time.sleep(1)
-            deadline = Deadline * 2
+            # deadline = Deadline * 2
         except urlfetch.DownloadError, e:
             errors.append(str(e))
             logging.error('DownloadError(deadline=%s, url=%r)', deadline, url)
             time.sleep(1)
-            deadline = Deadline * 2
+            # deadline = Deadline * 2
         except urlfetch.InvalidURLError, e:
             return send_notify(start_response, method, url, 501, 'Invalid URL: %s' % e)
         except urlfetch.ResponseTooLargeError, e:
@@ -268,11 +268,11 @@ def gae_post(environ, start_response):
             else:
                 errors.append(str(e))
                 return send_notify(start_response, method, url, 500, 'Python Server: Urlfetch error: %s' % errors)
-            deadline = Deadline * 2
+            # deadline = Deadline * 2
         except Exception, e:
             errors.append(str(e))
-            if i==0 and method=='GET':
-                deadline = Deadline * 2
+            # if i==0 and method=='GET':
+                # deadline = Deadline * 2
     else:
         return send_notify(start_response, method, url, 500, 'Python Server: Urlfetch error: %s' % errors)
 
