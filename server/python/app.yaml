@@ -8,3 +8,7 @@ handlers:
 - url: /fetch\.py
   script: wsgi.app
   secure: optional
+
+- url: /robots.txt
+  static_files: robots.txt
+  upload: robots.txt

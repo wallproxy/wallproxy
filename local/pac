@@ -29,6 +29,6 @@ def config():
         httpd.server_address = ip, port
         PacFile = import_from('pac')
         rulelist = (
-            (['http://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini'], 'PROXY *:*; DIRECT'),
+            (['https://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini'], 'PROXY *:*; DIRECT'),
         )
         PacFile(rulelist, [], files, 'DIRECT')
