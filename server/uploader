@@ -10,7 +10,7 @@ def config():
     dir = ospath.abspath(ospath.dirname(__file__))
     os.chdir(dir)
     sys.path.insert(0, ospath.join(dir, 'uploader.zip'))
-    set_hosts('.google.com', 'www.google.com www.l.google.com mail.l.google.com mail.google.com maps.l.google.com maps.google.com')
+    set_hosts('.google.com', 'www.google.com code.google.com mail.google.com groups.google.com maps.google.com mts0.google.com mts1.google.com news.google.com play.google.com video.google.com drive.google.com www.l.google.com mail.l.google.com')
     proxy = raw_input('Set proxy? (0)No  (1)127.0.0.1:8087  (Other)Your input\nIf 127.0.0.1:8087, make sure your wallproxy is running: ').strip()
     proxy = '' if proxy == '0' else ('127.0.0.1:8087' if proxy == '1' else proxy)
     if proxy: print('Upload with proxy %r' % proxy)
