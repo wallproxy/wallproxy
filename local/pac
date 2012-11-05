@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # PROXY_TARGET ('', 0) means get config from config.py, if you want to generate
 # pac with other address, please modify PROXY_TARGET, if not, keep it default.
-PROXY_TARGET = ('127.0.0.1', 8087)
+PROXY_TARGET = ('', 8087)
 
 # DO NOT MODIFY CODE BELOW!!
 listen_port = 0
