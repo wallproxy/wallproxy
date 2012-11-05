@@ -19,11 +19,11 @@ function show_editor(div, title, file) {
 	var editor = {mode: 'text/x-ini', lineWrapping: true, lineNumbers: true}, crlf = '\r\n';
 	if (file.match('\.py$')) {
 		editor = {
-			mode: {name:'python', version:2, singleLineStringErrors:false},
+			mode: {name:'python', version:2, singleLineStringErrors:true},
 			lineWrapping: true,
 			lineNumbers: true,
 			indentUnit: 4,
-			tabMode: 'shift',
+			extraKeys: {Tab: 'indentMore'},
 			matchBrackets: true
 		};
 		crlf = '\n';
