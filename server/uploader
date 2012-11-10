@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys, StringIO
-stdout, sys.stdout = sys.stdout, StringIO.StringIO()
+import sys; from cStringIO import StringIO
+stdout, sys.stdout = sys.stdout, StringIO()
 listen_port = 0
 def config():
     import sys, os, os.path as ospath, urllib
