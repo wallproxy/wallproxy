@@ -1,34 +1,19 @@
 # -*- coding: utf-8 -*-
-# PROXY_TARGET ('', 0) means get config from config.py, if you want to generate
-# pac with other address, please modify PROXY_TARGET, if not, keep it default.
-PROXY_TARGET = ('', 8087)
-
-# DO NOT MODIFY CODE BELOW!!
 listen_port = 0
 def config():
     import sys
-    set_hosts = import_from('util')
-    set_hosts('.googlecode.com', '203.208.47.160 203.208.47.161 203.208.47.162 203.208.47.163 203.208.47.164 203.208.47.165 203.208.47.166 203.208.47.167')
     files = sys.argv[2:]
     if files:
+        from make_config import Common
+        from os.path import dirname, join
+        ini = Common(join(dirname(config['__file__']), 'proxy.ini'))
+        ini.PAC_FILE = files; ini.parse_pac_config('DIRECT')
         try:
             del httpd.__class__.server_address
         except AttributeError:
             pass
-        ip, port = config['PROXY_TARGET']
-        if ip == '' or port == 0:
-            from os.path import dirname, join
-            try:
-                execfile(join(dirname(config['__file__']), 'config.py'), config)
-            except:
-                pass
-            if ip == '':
-                ip = config.vget(str, 'listen_ip', '127.0.0.1') or '0.0.0.0'
-            if port == 0:
-                port = config.vget(int, 'listen_port', 8086)
-        httpd.server_address = ip, port
+        httpd.server_address = ini.LISTEN_IP or '0.0.0.0', ini.LISTEN_PORT
+        set_hosts = import_from('util')
+        set_hosts('.googlecode.com', ini.GOOGLE_HOSTS)
         PacFile = import_from('pac')
-        rulelist = (
-            (['https://autoproxy-gfwlist.googlecode.com/svn/trunk/gfwlist.txt', 'userlist.ini'], 'PROXY *:*; DIRECT'),
-        )
-        PacFile(rulelist, [], files, 'DIRECT')
+        PacFile(ini.PAC_RULELIST, ini.PAC_IPLIST, ini.PAC_FILE, ini.PAC_DEFAULT)
