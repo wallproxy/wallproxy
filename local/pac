@@ -7,7 +7,7 @@ def config():
         from make_config import Common
         from os.path import dirname, join
         ini = Common(join(dirname(config['__file__']), 'proxy.ini'))
-        ini.PAC_FILE = files; ini.parse_pac_config('DIRECT')
+        ini.PAC_FILE = files; ini.parse_pac_config()
         try:
             del httpd.__class__.server_address
         except AttributeError:
