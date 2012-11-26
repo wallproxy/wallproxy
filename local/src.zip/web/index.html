@@ -13,6 +13,7 @@
 	<script src="js/codemirror/python.js"></script>
 	<script src="js/codemirror/properties.js"></script>
 	<script src="js/my.js"></script>
+	<script src="/stat.js"></script>
 </head>
 <body>
 <!-- Home -->
@@ -44,8 +45,9 @@
 		<a data-role="button" data-rel="back" href="#home" data-icon="back" data-iconpos="left" class="ui-btn-left">返回</a>
 	</div>
 	<div data-role="content" style="padding: 15px"><center>
+		<p>版本：<script>WP.wriVer()</script></p>
 		<a data-role="button" data-inline="true" target="_blank" href="https://code.google.com/p/wallproxy-plus/">教程</a>
-		<a data-role="button" data-inline="true" rel="external" href="http://127.0.0.1:8086/proxy.pac">自动代理脚本</a>
+		<a data-role="button" data-inline="true" rel="external" href="/proxy.pac">自动代理脚本</a>
 		<a data-role="button" data-inline="true" rel="external" href="/CA.crt">根证书</a>
 		<a data-role="button" data-inline="true" target="_blank" href="/hosts">hosts</a>
 	</center></div>
@@ -96,6 +98,16 @@
 		<a data-role="button" data-rel="back" href="#home" data-icon="back" data-iconpos="left" class="ui-btn-left">返回</a>
 	</div>
 	<div data-role="content" style="padding: 15px"><center>这家伙很累，什么都没有写……</center></div>
+	<div data-role="footer" class="footer-docs" data-theme="c">
+		<p>&copy; 2009-2012 HustMoon Studio</p>
+	</div>
+</div>
+<!-- Update -->
+<div data-role="page" id="update">
+	<div data-theme="a" data-role="header">
+		<h3>升级提示</h3>
+	</div>
+	<div data-role="content" style="padding: 15px"><center>您正在使用wallproxy/<script>WP.wriVer()</script>，建议<a href="https://github.com/wallproxy/wallproxy">更新到最新版本</a>。</center></div>
 	<div data-role="footer" class="footer-docs" data-theme="c">
 		<p>&copy; 2009-2012 HustMoon Studio</p>
 	</div>
