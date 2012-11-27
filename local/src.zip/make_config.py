@@ -644,7 +644,8 @@ def config():
         if proxy_type.endswith('http'):
             url = req.url
 %if GOOGLE_FORCEHTTPS:
-            if proxy_type != 'https2http' and forcehttps_sites.match(url, host) and req.content_length == 0:
+            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
+                req._r = url
                 return redirect_https
 %end
 %if USERAGENT_RULES:
@@ -686,7 +687,8 @@ truehttps_sites.match(host):
         if proxy_type.endswith('http'):
             url = req.url
 %if GOOGLE_FORCEHTTPS:
-            if proxy_type != 'https2http' and forcehttps_sites.match(url, host) and req.content_length == 0:
+            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
+                req._r = url
                 return redirect_https
 %end
 %if USERAGENT_RULES:
