@@ -643,11 +643,6 @@ def config():
         host, port = req.proxy_host
         if proxy_type.endswith('http'):
             url = req.url
-%if GOOGLE_FORCEHTTPS:
-            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
-                req._r = url
-                return redirect_https
-%end
 %if USERAGENT_RULES:
             if useragent_match(req.headers.get('User-Agent','')) and useragent_rules.match(url, host):
                 req.headers['User-Agent'] = {{!USERAGENT_STRING}}
@@ -655,6 +650,11 @@ def config():
 %if GOOGLE_WITHGAE:
             if withgae_sites.match(url, host):
                 return GAE
+%end
+%if GOOGLE_FORCEHTTPS:
+            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
+                req._r = url
+                return redirect_https
 %end
 %if CRLF_RULES:
             if crlf_rules.match(url, host):
@@ -686,11 +686,6 @@ truehttps_sites.match(host):
         host, port = req.proxy_host
         if proxy_type.endswith('http'):
             url = req.url
-%if GOOGLE_FORCEHTTPS:
-            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
-                req._r = url
-                return redirect_https
-%end
 %if USERAGENT_RULES:
             if useragent_match(req.headers.get('User-Agent','')) and useragent_rules.match(url, host):
                 req.headers['User-Agent'] = {{!USERAGENT_STRING}}
@@ -698,6 +693,11 @@ truehttps_sites.match(host):
 %if GOOGLE_WITHGAE:
             if withgae_sites.match(url, host):
                 return {{TARGET_PAAS}}
+%end
+%if GOOGLE_FORCEHTTPS:
+            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
+                req._r = url
+                return redirect_https
 %end
 %if CRLF_RULES:
             if crlf_rules.match(url, host):
