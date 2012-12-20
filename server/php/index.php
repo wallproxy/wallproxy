@@ -53,7 +53,7 @@ function post()
         }
     }
     $headers['connection'] = 'close';
-    $body = @gzuncompress(@file_get_contents('php://input'));
+    $body = @file_get_contents('php://input');
     $timeout = $GLOBALS['__timeout__'];
 
     $response_headers = array();
