@@ -667,12 +667,10 @@ def config():
 %end
             return GAE
 %if TRUE_HTTPS:
-        if \\
 %if NOTRUE_HTTPS:
-not notruehttps_sites.match(host) and \\
+        if notruehttps_sites.match(host): return
 %end
-truehttps_sites.match(host):
-            return FORWARD
+        if truehttps_sites.match(host): return FORWARD
 %end
     paas.data['GAE_server'].find_handler = find_gae_handler
 
@@ -728,12 +726,10 @@ truehttps_sites.match(host):
         return FORWARD
 %else:
 %if TRUE_HTTPS:
-        if \\
 %if NOTRUE_HTTPS:
-not notruehttps_sites.match(host) and \\
+        if notruehttps_sites.match(host): return
 %end
-truehttps_sites.match(host):
-            return FORWARD
+        if truehttps_sites.match(host): return FORWARD
 %end
 %if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE != 1:
         elif proxy_type.endswith('https'):
