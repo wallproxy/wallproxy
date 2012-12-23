@@ -652,7 +652,8 @@ def config():
                 return GAE
 %end
 %if GOOGLE_FORCEHTTPS:
-            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
+            needhttps = req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0
+            if needhttps and getattr(req, '_r', '') != url:
                 req._r = url
                 return redirect_https
 %end
@@ -662,7 +663,11 @@ def config():
                 return FORWARD
 %end
 %if HOSTS_RULES:
-            if hosts_rules.match(url, host):
+            if \\
+%if GOOGLE_FORCEHTTPS:
+not needhttps and \\
+%end
+hosts_rules.match(url, host):
                 return FORWARD
 %end
             return GAE
@@ -693,7 +698,8 @@ def config():
                 return {{TARGET_PAAS}}
 %end
 %if GOOGLE_FORCEHTTPS:
-            if req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0 and getattr(req, '_r', '') != url:
+            needhttps = req.scheme == 'http' and forcehttps_sites.match(url, host) and req.content_length == 0
+            if needhttps and getattr(req, '_r', '') != url:
                 req._r = url
                 return redirect_https
 %end
@@ -703,7 +709,11 @@ def config():
                 return FORWARD
 %end
 %if HOSTS_RULES:
-            if hosts_rules.match(url, host):
+            if \\
+%if GOOGLE_FORCEHTTPS:
+not needhttps and \\
+%end
+hosts_rules.match(url, host):
                 return FORWARD
 %end
 %if PAC_ENABLE and not PAC_FILE:
