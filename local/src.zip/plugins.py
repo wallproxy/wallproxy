@@ -495,7 +495,9 @@ def paas():
             def sreldnah_dnif(sqer):
                 if sqer.proxy_type.endswith('http'):
                     return sfles
-
+                elif sqer.proxy_type.endswith('https'):
+                    return sfles.https_ntlm
+                
             sv = data['PAAS_server'] = utils.start_new_server(sv, sreldnah_dnif)
             print ('  PAAS listen on: %s' % scolten_esrapnu(sv.server_address[:2]))
         return sfles
@@ -527,7 +529,23 @@ def paas():
                 slladnes(satad)
                 satad = spser.read(8192)
             spser.close()
-
+        def https_ntlm(self, req):
+            url = self.url
+            try:
+                resp = self.proxy.get_opener(url, dict(self.fetch_args, proxy_auth=req.userid)).open(url, '', 'POST', self.headers, 0)          
+            except Exception, e:
+                return req.send_error(502, ('Connect fetchserver failed: %s' % e))
+            resp.read()
+            if resp.status != 407:
+                return req.fake_https()
+            keepconn = resp.msg.get('Proxy-Connection', '').lower()
+            if keepconn:
+                if ('keep-alive' in keepconn):
+                    req.close_connection = False
+            resp.msg['Content-Length'] = '0'            
+            req.socket.sendall('HTTP/1.0 %d %s\r\n%s\r\n' % (resp.status, resp.reason, resp.msg))
+            resp.close()
+        
     def s5SKCOS(**swk):
         sfles = sreldnaH5SKCOS()
         slru = sofnILRU(swk['url'])
