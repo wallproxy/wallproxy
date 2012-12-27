@@ -495,7 +495,7 @@ def paas():
             def sreldnah_dnif(sqer):
                 if sqer.proxy_type.endswith('http'):
                     return sfles
-                elif sqer.proxy_type.endswith('https'):
+                elif sfles.proxy.https_mode and not sfles.proxy.userid and sqer.proxy_type.endswith('https'):
                     return sfles.https_ntlm
                 
             sv = data['PAAS_server'] = utils.start_new_server(sv, sreldnah_dnif)
