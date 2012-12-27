@@ -3,10 +3,18 @@
 // Contributor:
 //      Phus Lu        <phus.lu@gmail.com>
 //      Parkman Zhou   <cseparkman@gmail.com>
+//      Gwjwin         <gwjwin@hotmail.com>
 
-$__version__  = '1.10.0';
+// Changes log:
+//      Post data uncompress fixed
+//      Password support
+//      Chunked transfer fixed
+
+$__version__  = '1.10.1';
 $__password__ = '';
 $__timeout__  = 20;
+
+$chunked = 0;
 
 function encode_data($dic) {
     $a = array();
@@ -28,13 +36,22 @@ function decode_data($qs) {
 }
 
 function header_function($ch, $header){
+    //check 'Transfer-Encoding: chunked' header
+    if (strpos($header,"Transfer-Encoding: chunked")===0) {
+        $GLOBALS['chunked'] = 1;
+    }
     header($header);
     $GLOBALS['header_length'] += 1;
     return strlen($header);
 }
 
 function write_function($ch, $body){
-    echo $body;
+    //has 'chunked' header?
+    if ($GLOBALS['chunked']){
+        printf("%x\r\n%s\r\n", strlen($body), $body);
+    }else{
+        echo $body;
+    }
     $GLOBALS['body_length'] += 1;
     return strlen($body);
 }
@@ -44,6 +61,12 @@ function post()
     $request = @decode_data(@gzuncompress(base64_decode($_SERVER['HTTP_COOKIE'])));
     $method  = $request['method'];
     $url     = $request['url'];
+    $password = $request['password'];
+
+    if ($password != $GLOBALS['__password__']){
+        echo 'Invalid Password.';
+        exit(-1);
+    }
 
     $headers = array();
     foreach (explode("\r\n", $request['headers']) as $line) {
@@ -99,6 +122,8 @@ function post()
             $curl_opt[CURLOPT_CUSTOMREQUEST] = $method;
             $curl_opt[CURLOPT_POSTFIELDS] = $body;
             break;
+        case 'CONNECT':
+            exit;
         default:
             echo 'Invalid Method: '. $method;
             exit(-1);
@@ -115,6 +140,10 @@ function post()
     $ch = curl_init($url);
     curl_setopt_array($ch, $curl_opt);
     $ret = curl_exec($ch);
+    //chunked end
+    if ($GLOBALS['chunked']){
+        echo "0\r\n\r\n";
+    }
     //$status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $errno = curl_errno($ch);
     if ($errno && !isset($GLOBALS['header_length'])) {
