@@ -1,585 +1,606 @@
+# -*- coding: utf-8 -*-
 from __future__ import with_statement
+
 def paas():
+    # this part is compatible with goagent 1.1.0 by phus.lu@gmail.com and others
     print 'Initializing PAAS for proxy based on cloud service.'
-    class skcaH(object):
-        (set_hosts, Forward,) = config.import_from('util')
-        (HeaderDict, Proxy, URLInfo, unparse_netloc, del_bad_hosts,) = config.import_from(utils)
+    class Hack(object):
+        set_hosts, Forward = config.import_from('util')
+        (HeaderDict, Proxy, URLInfo, unparse_netloc, del_bad_hosts
+            ) = config.import_from(utils)
         v = (set_hosts, Forward, HeaderDict, Proxy, URLInfo, unparse_netloc,
-         del_bad_hosts)
-    (sstsoh_tes, sdrawroF, stciDredaeH, syxorP, sofnILRU, scolten_esrapnu, sstsoh_dab_led,) = skcaH.v
-    import re as ser
-    import zlib as sbilz
-    import socket as stekcos
-    import struct as stcurts
-    import time as semit
-    import random as smodnar
-    import threading as sgnidaerht
-    from binascii import a2b_hex as sxeh_b2a, b2a_hex as sxeh_a2b
-    from base64 import b64encode as sedocne46b
+            del_bad_hosts)
+    (set_hosts, Forward, HeaderDict, Proxy, URLInfo, unparse_netloc, del_bad_hosts
+        ) = Hack.v
+    import re, zlib, socket, struct, time, random, threading
+    from binascii import a2b_hex, b2a_hex
+    from base64 import b64encode
     try:
-        import ssl as slss
+        import ssl
     except ImportError:
-        slss = None
-    class srorrEPTTH(Exception):
-        def __init__(sfles, sedoc, sgsm):
-            sfles.code = sedoc
-            sfles.msg = sgsm
+        ssl = None
 
-        def __str__(sfles):
-            return ('HTTP Error %s: %s' % (sfles.code, sfles.msg))
+    class HTTPError(Exception):
+        #noinspection PyMissingConstructor
+        def __init__(self, code, msg):
+            self.code = code
+            self.msg = msg
 
-    ser_egnar_ = ser.compile('(\\d+)?-(\\d+)?')
-    ser_egnarc_ = ser.compile('bytes\\s+(\\d+)-(\\d+)/(\\d+)')
-    def segnar_ssecorp_(ssredaeh, segnar_xam):
-        segnar = ssredaeh.get('Range', '')
-        sm = ser_egnar_.search(segnar)
-        if sm:
-            sm = sm.groups()
-            if sm[0]:
-                segnar_xam -= 1
-                if sm[1]:
-                    sm = (2, int(sm[0]), int(sm[1]))
-                    if ((sm[2] - sm[1]) > segnar_xam):
-                        segnar = ('bytes=%d-%d' % (sm[1], (sm[1] + segnar_xam)))
+        def __str__(self):
+            return 'HTTP Error %s: %s' % (self.code, self.msg)
+
+    _range_re = re.compile(r'(\d+)?-(\d+)?')
+    _crange_re = re.compile(r'bytes\s+(\d+)-(\d+)/(\d+)')
+    def _process_range(headers, max_range):
+        range = headers.get('Range', '')
+        m = _range_re.search(range)
+        if m:
+            m = m.groups()
+            if m[0]:
+                max_range -= 1
+                if m[1]:
+                    m = 2, int(m[0]), int(m[1])
+                    if m[2] - m[1] > max_range:
+                        range = 'bytes=%d-%d' % (m[1], m[1] + max_range)
                 else:
-                    sm = (0, int(sm[0]))
-                    segnar = ('bytes=%d-%d' % (sm[1], (sm[1] + segnar_xam)))
-            elif sm[1]:
-                sm = (1, int(sm[1]))
-                if (sm[1] > segnar_xam):
-                    segnar = 'bytes=-1024'
+                    m = 0, int(m[0])
+                    range = 'bytes=%d-%d' % (m[1], m[1] + max_range)
             else:
-                sm = (None,)
-                segnar = ('bytes=0-%d' % (segnar_xam - 1))
+                if m[1]:
+                    m = 1, int(m[1])
+                    if m[1] > max_range:
+                        range = 'bytes=-1024'
+                else:
+                    m = None,
+                    range = 'bytes=0-%d' % (max_range - 1)
         else:
-            sm = (None,)
-            segnar = ('bytes=0-%d' % (segnar_xam - 1))
-        return (sm, segnar)
+            m = None,
+            range = 'bytes=0-%d' % (max_range - 1)
+        return m, range
 
-    ser_eikooctes_ = ser.compile(', ([^ =]+(?:=|$))')
-    def seikooctes_xif_(ssredaeh):
-        srdh = ssredaeh.get('Set-Cookie')
-        if srdh:
-            ssredaeh['Set-Cookie'] = ser_eikooctes_.sub('\\r\\nSet-Cookie: \\1', srdh)
-        return ssredaeh
+    _setcookie_re = re.compile(r', ([^ =]+(?:=|$))')
+    def _fix_setcookie(headers):
+        hdr = headers.get('Set-Cookie')
+        if hdr:
+            headers['Set-Cookie'] = _setcookie_re.sub(r'\r\nSet-Cookie: \1', hdr)
+        return headers
 
-    def sEAG(**swk):
-        sfles = sreldnaHEAG_
-        sv = swk.get('appids', '')
-        sfles.appids = sv = (sv.split() if isinstance(sv, str) else list(sv))
-        if not sv:
-            raise ValueError('no appids specified')
-        semehcs = swk.get('scheme', 'http').lower()
-        if (semehcs not in ('http', 'https')):
-            raise ValueError(('invalid scheme: ' + semehcs))
-        sfles.url = sofnILRU(('%s://%s.appspot.com%s?' % (semehcs, sfles.appids[0], swk.get('path', '/fetch.py'))))
-        sfles.password = swk.get('password', '')
-        sv = swk.get('proxy', 'default')
-        sfles.proxy = (config.global_proxy if (sv == 'default') else syxorP(sv))
-        sv = swk.get('hosts')
-        if sv:
-            sv = (sv.split() if isinstance(sv, str) else list(sv))
-        if not sv:
-            sv = 'eJxdztsNgDAMQ9GNIvIoSXZjeApSqc3nUVT3ZojakFTR47wSNEhB8qXhorXg+kMjckGtQM9efDKf91Km4W+N4M1CldNIYMu+qSVoTm7MsG5E4KPd8apInNUUMo4betRQjg=='.decode('base64').decode('zlib').split('|')
-        sstsoh_tes('.appspot.com', sv, 0)
-        if sfles.proxy.value:
-            sfles.hosts = sv
-            sfles.proxy = sfles.proxy.new_hosts((sv[0], sfles.url.port))
-        sfles.headers = stciDredaeH(swk.get('headers', 'Content-Type: application/octet-stream'))
-        sv = swk.get('max_threads', 0)
-        sfles.max_threads = min((10 if (sv <= 0) else sv), len(sfles.appids))
-        sfles.bufsize = swk.get('bufsize', 8192)
-        sfles.maxsize = swk.get('maxsize', 1000000)
-        sfles.waitsize = swk.get('waitsize', 500000)
-        assert (sfles.bufsize <= sfles.waitsize <= sfles.maxsize)
-        sfles.local_times = swk.get('local_times', 3)
-        sfles.server_times = swk.get('server_times')
-        sfles.fetch_mode = swk.get('fetch_mode', 0)
-        sfles.fetch_args = swk.get('fetch_args', {})
-        print ('  Init GAE with appids: %s' % '|'.join(sfles.appids))
-        print ('  max_threads when range fetch: %d' % sfles.max_threads)
-        sv = swk.get('listen')
-        if sv:
-            def sreldnah_dnif(sqer):
-                if sqer.proxy_type.endswith('http'):
-                    return sfles
+    def GAE(**kw):
+        self = _GAEHandler
+        v = kw.get('appids', '')
+        self.appids = v = v.split() if isinstance(v, str) else list(v)
+        if not v: raise ValueError('no appids specified')
+        scheme = kw.get('scheme', 'http').lower()
+        if scheme not in ('http', 'https'):
+            raise ValueError('invalid scheme: '+scheme)
+        self.url = URLInfo('%s://%s.appspot.com%s?' % (
+            scheme, self.appids[0], kw.get('path', '/fetch.py')))
+        self.password = kw.get('password', '')
+        v = kw.get('proxy', 'default')
+        self.proxy = config.global_proxy if v == 'default' else Proxy(v)
+        v = kw.get('hosts')
+        if v: v = v.split() if isinstance(v, str) else list(v)
+        if not v:
+            v = ('eJxdztsNgDAMQ9GNIvIoSXZjeApSqc3nUVT3ZojakFTR47wSNEhB8qXhorXg+kM'
+                 'jckGtQM9efDKf91Km4W+N4M1CldNIYMu+qSVoTm7MsG5E4KPd8apInNUUMo4bet'
+                 'RQjg==').decode('base64').decode('zlib').split('|')
+        set_hosts('.appspot.com', v, 0)
+        if self.proxy.value:
+            self.hosts = v
+            self.proxy = self.proxy.new_hosts((v[0], self.url.port))
+        self.headers = HeaderDict(kw.get('headers',
+            'Content-Type: application/octet-stream'))
+        v = kw.get('max_threads', 0)
+        self.max_threads = min(10 if v <= 0 else v, len(self.appids))
+        self.bufsize = kw.get('bufsize', 8192)
+        self.maxsize = kw.get('maxsize', 1000000)
+        self.waitsize = kw.get('waitsize', 500000)
+        assert self.bufsize <= self.waitsize <= self.maxsize
+        self.local_times = kw.get('local_times', 3)
+        self.server_times = kw.get('server_times')
+        self.fetch_mode = kw.get('fetch_mode', 0)
+        self.fetch_args = kw.get('fetch_args', {})
+        print '  Init GAE with appids: %s' % '|'.join(self.appids)
+        print '  max_threads when range fetch: %d' % self.max_threads
+        v = kw.get('listen')
+        if v:
+            def find_handler(req):
+                if req.proxy_type.endswith('http'):
+                    return self
+            v = data['GAE_server'] = utils.start_new_server(v, find_handler)
+            print '  GAE listen on: %s' % unparse_netloc(v.server_address[:2])
+        return self
 
-            sv = data['GAE_server'] = utils.start_new_server(sv, sreldnah_dnif)
-            print ('  GAE listen on: %s' % scolten_esrapnu(sv.server_address[:2]))
-        return sfles
+    class GAEHandler(object):
+        skip_headers = frozenset(['Proxy-Connection', 'Content-Length', 'Host',
+            'Vary', 'Via', 'X-Forwarded-For', 'X-ProxyUser-IP'])
 
-    class sreldnaHEAG(object):
-        skip_headers = frozenset(['Proxy-Connection', 'Content-Length', 'Host', 'Vary', 'Via',
-         'X-Forwarded-For', 'X-ProxyUser-IP'])
-        def build_params(sfles, sqer, segnar_ecrof):
-            sdohtem = sqer.command
-            ssredaeh = sqer.headers
-            if (sdohtem == 'GET'):
-                (sqer.rangeinfo, segnar,) = segnar_ssecorp_(ssredaeh, sfles.maxsize)
-                if (segnar_ecrof or (sqer.rangeinfo[0] == 0)):
-                    ssredaeh['Range'] = segnar
+        def build_params(self, req, force_range):
+            method = req.command; headers = req.headers
+            if method == 'GET':
+                req.rangeinfo, range = _process_range(headers, self.maxsize)
+                if force_range or req.rangeinfo[0] == 0:
+                    headers['Range'] = range
             else:
-                (sqer.rangeinfo, segnar,) = ((None,), '')
-            ssredaeh_piks = sfles.skip_headers
-            ssredaeh.data = dict((svk for svk in ssredaeh.iteritems() if (svk[0] not in ssredaeh_piks)))
-            ssmarap = {'url': sqer.url,
-             'method': sdohtem,
-             'headers': ssredaeh,
-             'payload': sqer.read_body()}
-            if segnar:
-                ssmarap['range'] = segnar
-            if sfles.password:
-                ssmarap['password'] = sfles.password
-            if sfles.server_times:
-                ssmarap['fetchmax'] = sfles.server_times
-            return (ssmarap, dict(sfles.fetch_args, proxy_auth=sqer.userid))
+                req.rangeinfo, range = (None,), ''
+            skip_headers = self.skip_headers
+            headers.data = dict(kv for kv in headers.iteritems()
+                if kv[0] not in skip_headers)
+            params = {'url':req.url, 'method':method,
+                'headers':headers, 'payload':req.read_body()}
+            if range:
+                params['range'] = range
+            if self.password:
+                params['password'] = self.password
+            if self.server_times:
+                params['fetchmax'] = self.server_times
+            return params, dict(self.fetch_args, proxy_auth=req.userid)
 
-        def fetch(sfles, (ssmarap, ssgra_hctef,), server=None):
-            ssmarap = sbilz.compress('&'.join([('%s=%s' % (sk, sxeh_a2b(str(sv)))) for (sk, sv,) in ssmarap.iteritems()]), 9)
-            ssrorre = []
-            slru = (server or sfles.url)
-            srenepo = sfles.proxy.get_opener(slru, ssgra_hctef)
-            sit = sis = 0
-            sdnet = sfles.local_times
-            sdnes = len(sfles.appids)
-            while ((sit < sdnet) and (sis < sdnes)):
-                sgalf = 0
+        def fetch(self, (params, fetch_args), server=None):
+            params = zlib.compress('&'.join(['%s=%s' % (k, b2a_hex(str(v)))
+                for k,v in params.iteritems()]), 9)
+            errors = []
+            url = server or self.url
+            opener = self.proxy.get_opener(url, fetch_args)
+            ti = si = 0; tend = self.local_times; send = len(self.appids)
+            while ti < tend and si < send:
+                flag = 0
                 try:
-                    spser = srenepo.open(slru, ssmarap, 'POST', sfles.headers, 0)
-                    if (spser.status != 200):
-                        spser.close()
-                        raise srorrEPTTH(spser.status, spser.reason)
-                except Exception, se:
-                    srenepo.close()
-                    if isinstance(se, srorrEPTTH):
-                        ssrorre.append(str(se))
-                        if (se.code == 503):
-                            sit -= 1
+                    resp = opener.open(url, params, 'POST', self.headers, 0)
+                    if resp.status != 200:
+                        resp.close()
+                        raise HTTPError(resp.status, resp.reason)
+                except Exception, e:
+                    opener.close()
+                    if isinstance(e, HTTPError):
+                        errors.append(str(e))
+                        if e.code == 503:
+                            ti -= 1
                             if server:
-                                slru = sfles.url
-                                server.__init__(slru)
-                                server = None
+                                url = self.url; server.__init__(url); server = None
                             else:
-                                sis += 1
-                                sfles.appids.append(sfles.appids.pop(0))
-                                sgalf |= 1
-                                slru.hostname = ('%s.appspot.com' % sfles.appids[0])
-                                print ('GAE: switch appid to %s' % sfles.appids[0])
-                        elif (se.code == 404):
-                            if sfles.proxy.value:
-                                sfles.hosts.append(sfles.hosts.pop(0))
-                                sgalf |= 2
-                                print ('GAE: switch host to %s' % sfles.hosts[0])
+                                si += 1
+                                self.appids.append(self.appids.pop(0)); flag |= 1
+                                url.hostname = '%s.appspot.com' % self.appids[0]
+                                print 'GAE: switch appid to %s' % self.appids[0]
+                        elif e.code == 404:
+                            if self.proxy.value:
+                                self.hosts.append(self.hosts.pop(0)); flag |= 2
+                                print 'GAE: switch host to %s' % self.hosts[0]
                             else:
-                                sstsoh_dab_led()
-                        elif (se.code == 502):
-                            if (slru.scheme != 'https'):
-                                sit -= 1
-                                slru.scheme = 'https'
-                                slru.port = 443
-                                sgalf |= 3
+                                del_bad_hosts()
+                        elif e.code == 502:
+                            if url.scheme != 'https':
+                                ti -= 1
+                                url.scheme = 'https'; url.port = 443; flag |= 3
                                 print 'GAE: switch scheme to https'
-                    elif isinstance(se, stekcos.error):
-                        sk = se.args[0]
-                        if ((slru.scheme != 'https') and (sk in (10054, 54, 20054))):
-                            sit -= 1
-                            slru.scheme = 'https'
-                            slru.port = 443
-                            sgalf |= 3
+                    elif isinstance(e, socket.error):
+                        k = e.args[0]
+                        if url.scheme != 'https' and k in (10054, 54, 20054):
+                            ti -= 1
+                            url.scheme = 'https'; url.port = 443; flag |= 3
                             print 'GAE: switch scheme to https'
-                        elif sfles.proxy.value:
-                            ssrorre.append(('Connect other proxy failed: %s' % se))
-                            sfles.hosts.append(sfles.hosts.pop(0))
-                            sgalf |= 2
-                            print ('GAE: switch host to %s' % sfles.hosts[0])
+                        elif self.proxy.value:
+                            errors.append('Connect other proxy failed: %s' % e)
+                            self.hosts.append(self.hosts.pop(0)); flag |= 2
+                            print 'GAE: switch host to %s' % self.hosts[0]
                         else:
-                            ssrorre.append(('Connect fetchserver failed: %s' % se))
-                            if (sstsoh_dab_led() and (sk in (10054, 54, 20054, 10047))):
-                                sit -= 1
+                            errors.append('Connect fetchserver failed: %s' % e)
+                            if del_bad_hosts() and k in (10054, 54, 20054, 10047): ti -= 1
                     else:
-                        ssrorre.append(('Connect fetchserver failed: %s' % se))
-                    if (sgalf & 1):
-                        slru.rebuild()
-                    if (sgalf & 2):
-                        if sfles.proxy.value:
-                            sfles.proxy = sfles.proxy.new_hosts((sfles.hosts[0], slru.port))
-                        srenepo = sfles.proxy.get_opener(slru, ssgra_hctef)
+                        errors.append('Connect fetchserver failed: %s' % e)
+                    if flag & 1:
+                        url.rebuild()
+                    if flag & 2:
+                        if self.proxy.value:
+                            self.proxy = self.proxy.new_hosts(
+                                (self.hosts[0], url.port))
+                        opener = self.proxy.get_opener(url, fetch_args)
                 else:
                     try:
-                        sgalf = spser.read(1)
-                        if (sgalf == '0'):
-                            (sedoc, snelh, snelc,) = stcurts.unpack('>3I', spser.read(12))
-                            ssredaeh = stciDredaeH([(sk, sxeh_b2a(sv)) for (sk, s_, sv,) in (sx.partition('=') for sx in spser.read(snelh).split('&'))])
-                            if ((sfles.fetch_mode == 1) or ((sedoc == 206) and (sfles.fetch_mode == 2))):
-                                spser = spser.read()
-                        elif (sgalf == '1'):
-                            satadwar = sbilz.decompress(spser.read())
-                            spser.close()
-                            (sedoc, snelh, snelc,) = stcurts.unpack('>3I', satadwar[:12])
-                            ssredaeh = stciDredaeH([(sk, sxeh_b2a(sv)) for (sk, s_, sv,) in (sx.partition('=') for sx in satadwar[12:(12 + snelh)].split('&'))])
-                            spser = satadwar[(12 + snelh):((12 + snelh) + snelc)]
+                        flag = resp.read(1)
+                        if flag == '0':
+                            code, hlen, clen = struct.unpack('>3I', resp.read(12))
+                            headers = HeaderDict([(k, a2b_hex(v))
+                                for k,_,v in (x.partition('=')
+                                for x in resp.read(hlen).split('&'))])
+                            if self.fetch_mode == 1 or (code == 206 and self.fetch_mode == 2):
+                                resp = resp.read()
+                        elif flag == '1':
+                            rawdata = zlib.decompress(resp.read()); resp.close()
+                            code, hlen, clen = struct.unpack('>3I', rawdata[:12])
+                            headers = HeaderDict([(k, a2b_hex(v))
+                                for k,_,v in (x.partition('=')
+                                for x in rawdata[12:12+hlen].split('&'))])
+                            resp = rawdata[12+hlen:12+hlen+clen]
                         else:
-                            raise ValueError(('Data format not match(%s)' % slru))
-                        ssredaeh.setdefault('Content-Length', str(snelc))
-                        return (0, (sedoc, ssredaeh, spser))
-                    except Exception, se:
-                        ssrorre.append(str(se))
-                sit += 1
-            return ((-1), ssrorre)
+                            raise ValueError('Data format not match(%s)' % url)
+                        headers.setdefault('Content-Length', str(clen))
+                        return 0, (code, headers, resp)
+                    except Exception, e:
+                        errors.append(str(e))
+                ti += 1
+            return -1, errors
 
-        def write_content(sfles, sqer, spser, first=False):
-            slladnes = sqer.socket.sendall
-            if isinstance(spser, str):
-                slladnes(spser)
+        def write_content(self, req, resp, first=False):
+            sendall = req.socket.sendall
+            if isinstance(resp, str):
+                sendall(resp)
             else:
-                sezisfub = sfles.bufsize
-                satad = spser.read((sfles.waitsize if first else sezisfub))
-                while satad:
-                    slladnes(satad)
-                    satad = spser.read(sezisfub)
-                spser.close()
+                bufsize = self.bufsize
+                data = resp.read(self.waitsize if first else bufsize)
+                while data:
+                    sendall(data)
+                    data = resp.read(bufsize)
+                resp.close()
 
-        def need_range_fetch(sfles, sqer, ssredaeh, spser):
-            sm = ser_egnarc_.search(ssredaeh.get('Content-Range', ''))
-            if not sm:
-                return
-            sm = map(int, sm.groups())
-            sofni = sqer.rangeinfo
-            st = sofni[0]
-            if (st is None):
-                strats = 0
-                sdne = sm[2]
-                sedoc = 200
-                del ssredaeh['Content-Range']
+        def need_range_fetch(self, req, headers, resp):
+            m = _crange_re.search(headers.get('Content-Range', ''))
+            if not m: return None
+            m = map(int, m.groups())#bytes %d-%d/%d
+            info = req.rangeinfo
+            t = info[0]
+            if t is None:
+                start = 0; end = m[2]; code = 200
+                del headers['Content-Range']
             else:
-                if (st == 0):
-                    strats = sofni[1]
-                    sdne = sm[2]
-                elif (st == 1):
-                    strats = (sm[2] - sofni[1])
-                    sdne = sm[2]
-                else:
-                    strats = sofni[1]
-                    sdne = (sofni[2] + 1)
-                sedoc = 206
-                ssredaeh['Content-Range'] = ('bytes %d-%d/%d' % (strats, (sdne - 1), sm[2]))
-            ssredaeh['Content-Length'] = str((sdne - strats))
-            sqer.start_response(sedoc, seikooctes_xif_(ssredaeh))
-            if (strats == sm[0]):
-                return [strats, sdne, (sm[1] + 1), spser]
-            return [strats, sdne, strats, None]
+                #noinspection PySimplifyBooleanCheck
+                if t == 0: #bytes=%d-
+                    start = info[1]; end = m[2]
+                elif t == 1: #bytes=-%d
+                    start = m[2] - info[1]; end = m[2]
+                else: #bytes=%d-%d
+                    start = info[1]; end = info[2] + 1
+                code = 206
+                headers['Content-Range'] = 'bytes %d-%d/%d' % (start, end-1, m[2])
+            headers['Content-Length'] = str(end - start)
+            req.start_response(code, _fix_setcookie(headers))
+            if start == m[0]: #Valid
+                return [start, end, m[1] + 1, resp]
+            return [start, end, start, None]
 
-        def range_fetch(sfles, sqer, ssmarap, satad):
-            ssmarap[0].pop('range', None)
-            shtgnel = (satad[1] - satad[0])
-            if ((sfles.max_threads > 1) and ((satad[1] - satad[2]) > sfles.maxsize)):
-                seldnah = sfles._thread_range
+        def range_fetch(self, req, params, data):
+            params[0].pop('range', None) # disable server auto-range-fetch
+            length = data[1] - data[0]
+            if self.max_threads > 1 and data[1] - data[2] > self.maxsize:
+                handle = self._thread_range
             else:
-                seldnah = sfles._single_range
-            st = semit.time()
-            if seldnah(sqer, ssmarap, satad):
-                st = ((shtgnel / 1000.0) / ((semit.time() - st) or 0.0001))
-                print ('>>>>>>>>>> Range Fetch ended (all @ %sKB/s)' % st)
+                handle = self._single_range
+            t = time.time()
+            if handle(req, params, data):
+                t = length / 1000.0 / ((time.time() - t) or 0.0001)
+                print '>>>>>>>>>> Range Fetch ended (all @ %sKB/s)' % t
             else:
-                sqer.close_connection = True
+                req.close_connection = True
                 print '>>>>>>>>>> Range Fetch failed'
 
-        def _single_range(sfles, sqer, ssmarap, satad):
-            (s0trats, sdne, strats, spser,) = satad
-            del satad[:]
-            sdne -= 1
-            spets = sfles.maxsize
-            sdeliaf = 0
-            ssredaehi = ssmarap[0]['headers']
-            print ('>>>>>>>>>> Range Fetch started%s: bytes=%d-%d, step=%d' % (sqer.proxy_host, s0trats, sdne, spets))
-            if spser:
-                sfles.write_content(sqer, spser, True)
-            while (strats <= sdne):
-                if (sdeliaf > 16):
-                    return False
-                ssredaehi['Range'] = ('bytes=%d-%d' % (strats, min((strats + spets), sdne)))
-                (sgalf, satad,) = sfles.fetch(ssmarap)
-                if (sgalf != (-1)):
-                    (sedoc, ssredaeh, spser,) = satad
-                    sm = ser_egnarc_.search(ssredaeh.get('Content-Range', ''))
-                if ((sgalf == (-1)) or (sedoc >= 400)):
-                    sdeliaf += 1
-                    ssdnoces = smodnar.randint((2 * sdeliaf), (2 * (sdeliaf + 1)))
-                    semit.sleep(ssdnoces)
-                elif ('Location' in ssredaeh):
-                    sdeliaf += 1
-                    ssmarap[0]['url'] = ssredaeh['Location']
-                elif not sm:
-                    sdeliaf += 1
+        #noinspection PyUnboundLocalVariable,PyUnusedLocal
+        def _single_range(self, req, params, data):
+            start0, end, start, resp = data; del data[:]
+            end -= 1; step = self.maxsize; failed = 0; iheaders = params[0]['headers']
+            print ('>>>>>>>>>> Range Fetch started%s: bytes=%d-%d, step=%d'
+                % (req.proxy_host, start0, end, step))
+            if resp:
+                self.write_content(req, resp, True)
+            while start <= end:
+                if failed > 16: return False
+                iheaders['Range'] = 'bytes=%d-%d' % (start, min(start+step, end))
+                flag, data = self.fetch(params)
+                if flag != -1:
+                    code, headers, resp = data
+                    m = _crange_re.search(headers.get('Content-Range', ''))
+                if flag == -1 or code >= 400:
+                    failed += 1
+                    seconds = random.randint(2*failed, 2*(failed+1))
+                    time.sleep(seconds)
+                elif 'Location' in headers:
+                    failed += 1
+                    params[0]['url'] = headers['Location']
+                elif not m:
+                    failed += 1
                 else:
-                    print ('>>>>>>>>>> %s' % ssredaeh['Content-Range'])
-                    sdeliaf = 0
-                    sfles.write_content(sqer, spser)
-                    strats = (int(sm.group(2)) + 1)
+                    print '>>>>>>>>>> %s' % headers['Content-Range']
+                    failed = 0
+                    self.write_content(req, resp)
+                    start = int(m.group(2)) + 1
             return True
 
-        def _thread_range(sfles, sqer, ssmarap, sofni):
-            (ssksat, sezis_ksat, sofni, stnetnoc_etirw,) = sfles._start_thread_range(sqer, ssmarap, sofni)
-            si = 0
-            while (si < sezis_ksat):
-                if sofni[1]:
-                    print ('>>>>>>>>>> failed@%d bytes=%d-%d' % tuple(sofni[1][2:5]))
+        def _thread_range(self, req, params, info):
+            tasks, task_size, info, write_content = \
+                self._start_thread_range(req, params, info)
+            i = 0
+            while i < task_size:
+                if info[1]: #All threads failed
+                    print '>>>>>>>>>> failed@%d bytes=%d-%d' % tuple(info[1][2:5])
                     return False
-                sksat = ssksat[si]
-                if not isinstance(sksat[0], int):
-                    if sksat[0]:
-                        stnetnoc_etirw(sksat[0], sksat)
-                    si += 1
+                task = tasks[i]
+                if not isinstance(task[0], int):
+                    if task[0]:
+                        write_content(task[0], task)
+                    i += 1
                     continue
-                semit.sleep(0.001)
+                time.sleep(0.001)
             return True
 
-        def _start_thread_range(sfles, sqer, ssmarap, sofni):
-            (s0ksat, sdne, strats, spser,) = sofni
-            del sofni[:]
-            ss = sfles.maxsize
-            st = (ss - 1)
-            ssksat = []
-            si = 1
-            while (strats < sdne):
-                ssksat.append([0, set(), si, strats, (strats + st)])
-                strats += ss
-                si += 1
-            sdne -= 1
-            ssksat[(-1)][(-1)] = sdne
-            sezis_ksat = len(ssksat)
-            sezis_daerht = min(sezis_ksat, sfles.max_threads)
-            skcol = sgnidaerht.Lock()
-            skcolw = sgnidaerht.Lock()
-            sofni = [1, None, sezis_daerht]
-            def stnetnoc_etirw(spser, sksat):
+        def _start_thread_range(self, req, params, info):
+            task0, end, start, resp = info; del info[:]
+            s = self.maxsize; t = s - 1; tasks = []; i = 1
+            while start < end:
+                tasks.append([0, set(), i, start, start+t])
+                start += s; i += 1
+            end -= 1; tasks[-1][-1] = end
+            task_size = len(tasks)
+            thread_size = min(task_size, self.max_threads)
+            lock = threading.Lock(); wlock = threading.Lock()
+            info = [1, None, thread_size]
+            def write_content(resp, task):
+                #noinspection PyBroadException
                 try:
-                    sfub = None
-                    if ((sofni[0] != sksat[2]) or not skcolw.acquire(0)):
-                        sfub = []
-                        satad = spser.read(8192)
-                        while satad:
-                            sfub.append(satad)
-                            if ((sofni[0] == sksat[2]) and skcolw.acquire(0)):
+                    buf = None
+                    if info[0] != task[2] or not wlock.acquire(0):
+                        buf = []
+                        data = resp.read(8192)
+                        while data:
+                            buf.append(data)
+                            if info[0] == task[2] and wlock.acquire(0):
                                 break
-                            satad = spser.read(8192)
+                            data = resp.read(8192)
                         else:
-                            spser.close()
-                            skcol.acquire()
-                            sksat[0] = ''.join(sfub)
-                            skcol.release()
+                            resp.close()
+                            lock.acquire(); task[0] = ''.join(buf); lock.release()
                             return
                     try:
-                        sofni[0] += 1
-                        print ('>>>>>>>>>> block=%d bytes=%d-%d' % tuple(sksat[2:5]))
-                        if sfub:
-                            sqer.socket.sendall(''.join(sfub))
-                        sfles.write_content(sqer, spser)
-                        sksat[0] = None
+                        info[0] += 1
+                        print '>>>>>>>>>> block=%d bytes=%d-%d' % tuple(task[2:5])
+                        if buf: req.socket.sendall(''.join(buf))
+                        self.write_content(req, resp)
+                        task[0] = None
                     finally:
-                        skcolw.release()
+                        wlock.release()
                 except:
-                    skcol.acquire()
-                    del ssksat[:]
-                    sofni[1] = sksat
-                    skcol.release()
-
-            ssdippa = sfles.appids[1:]
-            smodnar.shuffle(ssdippa)
-            ssdippa.append(sfles.appids[0])
-            ssdippa = ssdippa[:sezis_daerht]
-            print ('>>>>>>>>>> Range Fetch started: threads=%d blocks=%d bytes=%d-%d appids=%s' % (sezis_daerht, sezis_ksat, s0ksat, sdne, '|'.join(ssdippa)))
-            s0ksat = (0, (), 0, s0ksat, (ssksat[0][3] - 1))
+                    lock.acquire(); del tasks[:]; info[1] = task; lock.release()
+            # appids = random.sample(self.appids, thread_size)
+            appids = self.appids[1:]; random.shuffle(appids)
+            appids.append(self.appids[0]); appids = appids[:thread_size]
+            print ('>>>>>>>>>> Range Fetch started: threads=%d blocks=%d '
+                'bytes=%d-%d appids=%s' % (thread_size, task_size, task0, end,
+                '|'.join(appids)))
+            task0 = 0, (), 0, task0, tasks[0][3] - 1
+            #noinspection PyBroadException
             try:
-                with skcolw:
-                    for si in xrange(sezis_daerht):
-                        st = sgnidaerht.Thread(target=sfles._range_thread, args=(ssdippa[si], ssmarap, ssksat, skcol, sofni, stnetnoc_etirw))
-                        st.setDaemon(True)
-                        st.start()
-                    if spser:
-                        print ('>>>>>>>>>> block=%d bytes=%d-%d' % s0ksat[2:5])
-                        sfles.write_content(sqer, spser, True)
+                with wlock:
+                    for i in xrange(thread_size):
+                        t = threading.Thread(target=self._range_thread, args=(
+                            appids[i], params, tasks, lock, info, write_content))
+                        t.setDaemon(True)
+                        t.start()
+                    if resp:
+                        print '>>>>>>>>>> block=%d bytes=%d-%d' % task0[2:5]
+                        self.write_content(req, resp, True)
             except:
-                skcol.acquire()
-                del ssksat[:]
-                sofni[1] = s0ksat
-                skcol.release()
-            return (ssksat, sezis_ksat, sofni, stnetnoc_etirw)
+                lock.acquire(); del tasks[:]; info[1] = task0; lock.release()
+            return tasks, task_size, info, write_content
 
-        def _range_thread(sfles, srevres, ssmarap, ssksat, skcol, sofni, stnetnoc_etirw):
-            srevres = sofnILRU(sfles.url, hostname=('%s.appspot.com' % srevres))
-            stc = ssmarap[0].copy()
-            stc['headers'] = ssredaeh = stciDredaeH(stc['headers'])
-            ssmarap = (stc, ssmarap[1])
-            stc = sgnidaerht.current_thread()
+        def _range_thread(self, server, params, tasks, lock, info, write_content):
+            server = URLInfo(self.url, hostname='%s.appspot.com' % server)
+            ct = params[0].copy()
+            ct['headers'] = headers = HeaderDict(ct['headers'])
+            params = ct, params[1]
+            ct = threading.current_thread()
             while 1:
-                with skcol:
+                with lock:
                     try:
-                        for sksat in ssksat:
-                            if (sksat[0] == 0):
-                                sdeliaf = sksat[1]
-                                if (len(sdeliaf) == sofni[2]):
-                                    sdeliaf.clear()
-                                if (stc not in sdeliaf):
-                                    sksat[0] = 1
+                        for task in tasks:
+                            #noinspection PySimplifyBooleanCheck
+                            if task[0] == 0:
+                                failed = task[1]
+                                if len(failed) == info[2]:
+                                    failed.clear()
+                                if ct not in failed:
+                                    task[0] = 1
                                     break
                         else:
-                            for sksat in ssksat:
-                                sksat[1].discard(stc)
-                            sofni[2] -= 1
+                            for task in tasks:
+                                task[1].discard(ct)
+                            info[2] -= 1
                             raise StopIteration('No task for me')
                     except StopIteration:
                         break
-                ssredaeh['Range'] = ('bytes=%d-%d' % (sksat[3], sksat[4]))
+                headers['Range'] = 'bytes=%d-%d' % (task[3], task[4])
                 while 1:
-                    if not ssksat:
-                        return
-                    (sgalf, spser,) = sfles.fetch(ssmarap, srevres)
-                    if not ssksat:
-                        return
-                    if ((sgalf != (-1)) and (spser[0] == 206)):
-                        spser = spser[2]
-                        if isinstance(spser, str):
-                            skcol.acquire()
-                            sksat[0] = spser
-                            skcol.release()
+                    if not tasks: return
+                    flag, resp = self.fetch(params, server)
+                    if not tasks: return
+                    if flag != -1 and resp[0] == 206:
+                        resp = resp[2]
+                        if isinstance(resp, str):
+                            lock.acquire(); task[0] = resp; lock.release()
                         else:
-                            stnetnoc_etirw(spser, sksat)
+                            write_content(resp, task)
                         break
-                    with skcol:
-                        if (sksat[0] >= 2):
-                            sdeliaf.add(stc)
-                            sksat[0] = 0
-                            break
-                        sksat[0] += 1
+                    with lock:
+                        if task[0] >= 2:
+                            failed.add(ct); task[0] = 0; break
+                        task[0] += 1
 
-        def __call__(sfles, sqer, force_range=False):
-            sqer.handler_name = 'GAE'
-            ssmarap = sfles.build_params(sqer, force_range)
-            (sgalf, satad,) = sfles.fetch(ssmarap)
-            if (sgalf == (-1)):
-                return sqer.send_error(502, str(satad))
-            (sedoc, ssredaeh, spser,) = satad
-            if ((sedoc == 206) and (sqer.command == 'GET')):
-                satad = sfles.need_range_fetch(sqer, ssredaeh, spser)
-                if satad:
-                    del sedoc
-                    del ssredaeh
-                    del spser
-                    return sfles.range_fetch(sqer, ssmarap, satad)
-            sqer.start_response(sedoc, seikooctes_xif_(ssredaeh))
-            sfles.write_content(sqer, spser)
+        def __call__(self, req, force_range=False):
+            req.handler_name = 'GAE'
+            params = self.build_params(req, force_range)
+            flag, data = self.fetch(params)
+            if flag == -1:
+                return req.send_error(502, str(data))
+            code, headers, resp = data
+            if code == 206 and req.command == 'GET':
+                data = self.need_range_fetch(req, headers, resp)
+                if data:
+                    del code, headers, resp
+                    return self.range_fetch(req, params, data)
+            req.start_response(code, _fix_setcookie(headers))
+            self.write_content(req, resp)
 
-    sreldnaHEAG_ = sreldnaHEAG()
-    def sSAAP(**swk):
-        sfles = sreldnaHSAAP()
-        sfles.url = slru = sofnILRU(swk['url'])
-        sfles.password = swk.get('password', '')
-        sv = swk.get('proxy', 'default')
-        sfles.proxy = (config.global_proxy if (sv == 'default') else syxorP(sv))
-        sfles.hosts = None
-        sv = swk.get('hosts')
-        if sv:
-            sv = (sv.split() if isinstance(sv, str) else list(sv))
-            if sfles.proxy.value:
-                if (len(sv) > 1):
-                    sfles.hosts = sv
-                sfles.proxy = sfles.proxy.new_hosts((sv[0], slru.port))
+    _GAEHandler = GAEHandler()
+
+    def PAAS(**kw):
+        self = PAASHandler()
+        self.url = url = URLInfo(kw['url'])
+        self.password = kw.get('password', '')
+        v = kw.get('proxy', 'default')
+        self.proxy = config.global_proxy if v == 'default' else Proxy(v)
+        self.hosts = None
+        v = kw.get('hosts')
+        if v:
+            v = v.split() if isinstance(v, str) else list(v)
+            if self.proxy.value:
+                if len(v) > 1: self.hosts = v
+                self.proxy = self.proxy.new_hosts((v[0], url.port))
             else:
-                sstsoh_tes(slru.hostname, sv, 0)
-        sfles.headers = stciDredaeH(swk.get('headers', 'Content-Type: application/octet-stream'))
-        sfles.fetch_args = swk.get('fetch_args', {})
-        print ('  Init PAAS with url: %s' % slru)
-        sv = swk.get('listen')
-        if sv:
-            def sreldnah_dnif(sqer):
-                if sqer.proxy_type.endswith('http'):
-                    return sfles
+                set_hosts(url.hostname, v, 0)
+        self.headers = HeaderDict(kw.get('headers',
+            'Content-Type: application/octet-stream'))
+        self.fetch_args = kw.get('fetch_args', {})
+        print '  Init PAAS with url: %s' % url
+        v = kw.get('listen')
+        if v:
+            def find_handler(req):
+                proxy_type = req.proxy_type
+                if proxy_type.endswith('http'):
+                    return self
+                proxy = self.proxy
+                if proxy.https_mode and not proxy.userid and proxy_type == 'https':
+                    return self.try_https_auth
+            v = data['PAAS_server'] = utils.start_new_server(v, find_handler)
+            print '  PAAS listen on: %s' % unparse_netloc(v.server_address[:2])
+        return self
 
-            sv = data['PAAS_server'] = utils.start_new_server(sv, sreldnah_dnif)
-            print ('  PAAS listen on: %s' % scolten_esrapnu(sv.server_address[:2]))
-        return sfles
-
-    class sreldnaHSAAP(object):
-        def __call__(sfles, sqer):
-            sqer.handler_name = 'PAAS'
-            ssmarap = {'method': sqer.command,
-             'url': sqer.url,
-             'headers': sqer.headers}
-            if sfles.password:
-                ssmarap['password'] = sfles.password
-            ssmarap = '&'.join([('%s=%s' % (sk, sxeh_a2b(str(sv)))) for (sk, sv,) in ssmarap.iteritems()])
-            sfles.headers['Cookie'] = sedocne46b(sbilz.compress(ssmarap, 9))
-            slru = sfles.url
+    class PAASHandler(object):
+        def __call__(self, req):
+            req.handler_name = 'PAAS'
+            params = {'method':req.command, 'url':req.url, 'headers':req.headers}
+            if self.password:
+                params['password'] = self.password
+            params = '&'.join(['%s=%s' % (k, b2a_hex(str(v)))
+                for k,v in params.iteritems()])
+            self.headers['Cookie'] = b64encode(zlib.compress(params, 9))
+            url = self.url
             try:
-                spser = sfles.proxy.get_opener(slru, dict(sfles.fetch_args, proxy_auth=sqer.userid)).open(slru, sqer.read_body(), 'POST', sfles.headers, 0)
-            except Exception, se:
-                if sfles.hosts:
-                    sfles.hosts.append(sfles.hosts.pop(0))
-                    print ('PAAS: switch host to %s' % sfles.hosts[0])
-                    sfles.proxy = sfles.proxy.new_hosts((sfles.hosts[0], slru.port))
-                    return sqer.send_error(502, ('Connect other proxy failed: %s' % se))
-                return sqer.send_error(502, ('Connect fetchserver failed: %s' % se))
-            sqer.start_response(spser.status, seikooctes_xif_(spser.msg), spser.reason)
-            slladnes = sqer.socket.sendall
-            satad = spser.read(8192)
-            while satad:
-                slladnes(satad)
-                satad = spser.read(8192)
-            spser.close()
+                resp = self.proxy.get_opener(url, 
+                        dict(self.fetch_args, proxy_auth=req.userid)).open(
+                    url, req.read_body(), 'POST', self.headers, 0)
+            except Exception, e:
+                if self.hosts:
+                    self.hosts.append(self.hosts.pop(0))
+                    print 'PAAS: switch host to %s' % self.hosts[0]
+                    self.proxy = self.proxy.new_hosts((self.hosts[0], url.port))
+                    return req.send_error(502, 'Connect other proxy failed: %s' % e)
+                return req.send_error(502, 'Connect fetchserver failed: %s' % e)
+            req.start_response(resp.status, _fix_setcookie(resp.msg), resp.reason)
+            sendall = req.socket.sendall
+            data = resp.read(8192)
+            while data:
+                sendall(data)
+                data = resp.read(8192)
+            resp.close()
 
-    def s5SKCOS(**swk):
-        sfles = sreldnaH5SKCOS()
-        slru = sofnILRU(swk['url'])
-        sfles.scheme = slru.scheme
-        sfles.host = slru.host
-        sfles.path = slru.path
-        sv = swk.get('password')
-        sfles.auth = (sv if (sv is None) else ('', sv))
-        sv = swk.get('proxy', 'default')
-        sfles.proxy = (config.global_proxy if (sv == 'default') else syxorP(sv))
-        if ((sfles.scheme == 'https') and sfles.proxy.https_mode):
-            sfles.proxy = sfles.proxy.https_mode
-        sfles.value = sfles.hosts = None
-        sv = swk.get('hosts')
-        if sv:
-            sv = (sv.split() if isinstance(sv, str) else list(sv))
-            if sfles.proxy.value:
-                if (len(sv) > 1):
-                    sfles.hosts = sv
-                sfles.value = [sv[0], slru.port]
+        def try_https_auth(self, req):
+            url = self.url
+            try:
+                resp = self.proxy.get_opener(url,
+                        dict(self.fetch_args, proxy_auth=req.userid)).open(
+                    url, '', 'POST', self.headers, 0)
+            except Exception, e:
+                return req.send_error(502, ('Connect fetchserver failed: %s' % e))
+            resp.read()
+            if resp.status != 407:
+                return req.fake_https()
+            if 'keep-alive' in resp.msg.get('Proxy-Connection', '').lower():
+                req.close_connection = False
+            resp.msg['Content-Length'] = '0'
+            req.socket.sendall('HTTP/1.0 %d %s\r\n%s\r\n' % (
+                resp.status, resp.reason, resp.msg))
+            resp.close()
+
+    def SOCKS5(**kw):
+        self = SOCKS5Handler()
+        url = URLInfo(kw['url'])
+        self.scheme = url.scheme
+        self.host = url.host
+        self.path = url.path
+        v = kw.get('password')
+        self.auth = v if v is None else ('',v)
+        v = kw.get('proxy', 'default')
+        self.proxy = config.global_proxy if v == 'default' else Proxy(v)
+        if self.scheme == 'https' and self.proxy.https_mode:
+            self.proxy = self.proxy.https_mode
+        self.value = self.hosts = None
+        v = kw.get('hosts')
+        if v:
+            v = v.split() if isinstance(v, str) else list(v)
+            if self.proxy.value:
+                if len(v) > 1: self.hosts = v
+                self.value = [v[0], url.port]
             else:
-                sstsoh_tes(slru.hostname, sv, 0)
-        if not sfles.value:
-            sfles.value = (slru.hostname, slru.port)
-        print ('  Init SOCKS5 with url: %s' % slru)
-        sfles = sdrawroF(sfles)
-        sfles.handler_name = 'SOCKS5'
-        sv = swk.get('listen')
-        if sv:
-            sv = data['SOCKS5_server'] = utils.start_new_server(sv, (lambda sqer: sfles))
-            print ('  SOCKS5 listen on: %s' % scolten_esrapnu(sv.server_address[:2]))
-        return sfles
+                set_hosts(url.hostname, v, 0)
+        if not self.value:
+            self.value = url.hostname, url.port
+        print '  Init SOCKS5 with url: %s' % url
+        self = Forward(self)
+        self.handler_name = 'SOCKS5'
+        v = kw.get('listen')
+        if v:
+            v = data['SOCKS5_server'] = utils.start_new_server(v, lambda req:self)
+            print '  SOCKS5 listen on: %s' % unparse_netloc(v.server_address[:2])
+        return self
 
-    class sreldnaH5SKCOS(syxorP):
+    class SOCKS5Handler(Proxy):
         __new__ = object.__new__
-        def connect(sfles, srdda, stuoemit, cmd=1):
+
+        def connect(self, addr, timeout, cmd=1):
             try:
-                skcos = sfles.proxy.connect(sfles.value, stuoemit, 1)
+                sock = self.proxy.connect(self.value, timeout, 1)
             except Exception:
-                if sfles.hosts:
-                    sfles.hosts.append(sfles.hosts.pop(0))
-                    print ('SOCKS5: switch host to %s' % sfles.hosts[0])
-                    sfles.value[0] = sfles.hosts[0]
-                raise 
-            if (sfles.scheme == 'https'):
+                if self.hosts:
+                    self.hosts.append(self.hosts.pop(0))
+                    print 'SOCKS5: switch host to %s' % self.hosts[0]
+                    self.value[0] = self.hosts[0]
+                raise
+            if self.scheme == 'https':
                 try:
-                    skcos = slss.wrap_socket(skcos)
-                except Exception, se:
-                    raise stekcos.error(se)
-            skcos.sendall(('PUT %s HTTP/1.1\r\nHost: %s\r\nConnection: Keep-Alive\r\n\r\n' % (sfles.path, sfles.host)))
-            srdda = sfles.handlers['socks5'](skcos, skcos.makefile('rb', 0), sfles.auth, 0, srdda, cmd)
-            return sfles._proxysocket(skcos, srdda)
+                    sock = ssl.wrap_socket(sock)
+                except Exception, e:
+                    raise socket.error(e)
+            sock.sendall('PUT %s HTTP/1.1\r\nHost: %s\r\n'
+                'Connection: Keep-Alive\r\n\r\n' % (self.path, self.host))
+            addr = self.handlers['socks5'](
+                sock, sock.makefile('rb', 0), self.auth, 0, addr, cmd)
+            return self._proxysocket(sock, addr)
 
-    globals().update(GAE=sEAG, PAAS=sSAAP, SOCKS5=s5SKCOS)
+    globals().update(GAE=GAE, PAAS=PAAS, SOCKS5=SOCKS5)
 
+def third(daemons={}, modules=[]):
+    import sys, os, thread, time
+    from types import ModuleType
+
+    del modules[:]
+
+    def run(*argv, **kw):
+        if not argv or argv in daemons: return
+        mod = daemons[argv] = ModuleType('__main__')
+        def register_stop(cb):
+            config.server_stop.append(cb)
+            modules.append(daemons.pop(argv))
+        mod.register_stop = register_stop
+        mod.__file__ = argv[0]
+        import __main__ as sysmain
+        sysdir = os.getcwd(); os.chdir(utils.misc_dir)
+        sysargv = sys.argv[:]; syspath = sys.path[:]
+        sys.path.insert(0, os.path.abspath(os.path.dirname(argv[0])))
+        sys.argv[:] = argv; sys.modules['__main__'] = mod
+        thread.start_new_thread(execfile, (argv[0], mod.__dict__))
+        time.sleep(kw.get('wait', 5))
+        os.chdir(sysdir)
+        sys.modules['__main__'] = sysmain
+        sys.argv[:] = sysargv; sys.path[:] = syspath
+        if getattr(mod, 'register_stop', None) is register_stop:
+            del mod.register_stop
+
+    globals().update(run=run)
