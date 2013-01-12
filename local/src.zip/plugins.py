@@ -575,3 +575,32 @@ def paas():
             return self._proxysocket(sock, addr)
 
     globals().update(GAE=GAE, PAAS=PAAS, SOCKS5=SOCKS5)
+
+def third(daemons={}, modules=[]):
+    import sys, os, thread, time
+    from types import ModuleType
+
+    del modules[:]
+
+    def run(*argv, **kw):
+        if not argv or argv in daemons: return
+        mod = daemons[argv] = ModuleType('__main__')
+        def register_stop(cb):
+            config.server_stop.append(cb)
+            modules.append(daemons.pop(argv))
+        mod.register_stop = register_stop
+        mod.__file__ = argv[0]
+        import __main__ as sysmain
+        sysdir = os.getcwd(); os.chdir(utils.misc_dir)
+        sysargv = sys.argv[:]; syspath = sys.path[:]
+        sys.path.insert(0, os.path.abspath(os.path.dirname(argv[0])))
+        sys.argv[:] = argv; sys.modules['__main__'] = mod
+        thread.start_new_thread(execfile, (argv[0], mod.__dict__))
+        time.sleep(kw.get('wait', 5))
+        os.chdir(sysdir)
+        sys.modules['__main__'] = sysmain
+        sys.argv[:] = sysargv; sys.path[:] = syspath
+        if getattr(mod, 'register_stop', None) is register_stop:
+            del mod.register_stop
+
+    globals().update(run=run)
