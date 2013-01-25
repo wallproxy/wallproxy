@@ -595,12 +595,14 @@ def third(daemons={}, modules=[]):
         sysargv = sys.argv[:]; syspath = sys.path[:]
         sys.path.insert(0, os.path.abspath(os.path.dirname(argv[0])))
         sys.argv[:] = argv; sys.modules['__main__'] = mod
-        thread.start_new_thread(execfile, (argv[0], mod.__dict__))
-        time.sleep(kw.get('wait', 5))
-        os.chdir(sysdir)
-        sys.modules['__main__'] = sysmain
-        sys.argv[:] = sysargv; sys.path[:] = syspath
-        if getattr(mod, 'register_stop', None) is register_stop:
-            del mod.register_stop
+        try:
+            thread.start_new_thread(execfile, (argv[0], mod.__dict__))
+            time.sleep(kw.get('wait', 5))
+        finally:
+            os.chdir(sysdir)
+            sys.modules['__main__'] = sysmain
+            sys.argv[:] = sysargv; sys.path[:] = syspath
+            if getattr(mod, 'register_stop', None) is register_stop:
+                del mod.register_stop
 
     globals().update(run=run)

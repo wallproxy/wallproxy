@@ -236,6 +236,11 @@ class Common(object):
                 v = v.replace('|', ' ').strip()
                 if k and v: self.HOSTS[k] = v
 
+        self.THIRD_APPS = None
+        if self.getboolean('third', 'enable', CONFIG.has_section('third')):
+            self.remove_option('third', 'enable', '')
+            self.THIRD_APPS = [(k,v if v[0] in ('"',"'") else repr(v)) for k,v in self.items('third', ()) if v]
+
         self.USERAGENT_STRING   = self.getboolean('useragent', 'enable', True) and self.get('useragent', 'string', '')
         self.USERAGENT_MATCH    = self.USERAGENT_STRING and self.get('useragent', 'match', '')
         self.USERAGENT_RULES    = self.USERAGENT_MATCH and get_rules('useragent', 'rules')
@@ -410,8 +415,15 @@ forward_timeout = {{!FORWARD_TIMEOUT or None}}
 %if DEBUG_LEVEL >= 0:
 debuglevel = {{!DEBUG_LEVEL}}
 %end
+check_update = 0
 
 def config():
+%if THIRD_APPS:
+    from plugins import third; third = install('third', third)
+%for k,v in THIRD_APPS:
+    third.run({{v}}) #{{k}}
+%end
+%end
     Forward, set_dns, set_resolve, set_hosts, check_auth, redirect_https = import_from('util')
     FORWARD = Forward()
 %if REMOTE_DNS:
