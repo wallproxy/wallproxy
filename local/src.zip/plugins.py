@@ -577,6 +577,9 @@ def paas():
     globals().update(GAE=GAE, PAAS=PAAS, SOCKS5=SOCKS5)
 
 def third(daemons={}, modules=[]):
+    print '-' * 78
+    print 'Initializing third for other python applications.'
+
     import sys, os, thread, time
     from types import ModuleType
 

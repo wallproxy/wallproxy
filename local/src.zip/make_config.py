@@ -418,12 +418,6 @@ debuglevel = {{!DEBUG_LEVEL}}
 check_update = 0
 
 def config():
-%if THIRD_APPS:
-    from plugins import third; third = install('third', third)
-%for k,v in THIRD_APPS:
-    third.run({{v}}) #{{k}}
-%end
-%end
     Forward, set_dns, set_resolve, set_hosts, check_auth, redirect_https = import_from('util')
     FORWARD = Forward()
 %if REMOTE_DNS:
@@ -632,6 +626,13 @@ def config():
 %end #PAC_FILE
 %NEED_PAC = NEED_PAC != 'PAC_ENABLE' or PAC_ENABLE
 %end #PAC_ENABLE
+%if THIRD_APPS:
+
+    from plugins import third; third = install('third', third)
+%for k,v in THIRD_APPS:
+    third.run({{v}}) #{{k}}
+%end
+%end
 
 %if USERNAME:
     auth_checker = check_auth({{!USERNAME}}, {{!PASSWORD}}\\
