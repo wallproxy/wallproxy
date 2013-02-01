@@ -240,6 +240,9 @@ class Common(object):
         if self.getboolean('third', 'enable', CONFIG.has_section('third')):
             self.remove_option('third', 'enable', '')
             self.THIRD_APPS = [(k,v if v[0] in ('"',"'") else repr(v)) for k,v in self.items('third', ()) if v]
+        if self.getboolean('dns', 'enable', CONFIG.has_section('dns')):
+            self.DNS_ENABLE       = True
+            self.DNS_CONFIG_FILE  = self.get('dns', 'configfile', 'hosts.ini')
 
         self.USERAGENT_STRING   = self.getboolean('useragent', 'enable', True) and self.get('useragent', 'string', '')
         self.USERAGENT_MATCH    = self.USERAGENT_STRING and self.get('useragent', 'match', '')
@@ -416,6 +419,9 @@ forward_timeout = {{!FORWARD_TIMEOUT or None}}
 debuglevel = {{!DEBUG_LEVEL}}
 %end
 check_update = 0
+%if DNS_ENABLE:
+dns_config_file = {{!DNS_CONFIG_FILE}}
+%end
 
 def config():
     Forward, set_dns, set_resolve, set_hosts, check_auth, redirect_https = import_from('util')
@@ -633,6 +639,13 @@ def config():
     third.run({{v}}) #{{k}}
 %end
 %end
+%if DNS_ENABLE:
+
+    from dns_proxy_launcher import dns_proxy
+    dns_proxy = install("DNS Proxy", dns_proxy)
+    dns_proxy.start()
+%end
+
 
 %if USERNAME:
     auth_checker = check_auth({{!USERNAME}}, {{!PASSWORD}}\\
