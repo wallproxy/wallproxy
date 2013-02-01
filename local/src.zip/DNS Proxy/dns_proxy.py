@@ -66,6 +66,7 @@ def launcher(host_file_loc = "hosts.ini"):
     global hosts_content
     hosts_content = HostsParser(host_file_loc)
     local_server = LocalThreadingDNSServer((hosts_content.IP, hosts_content.PORT), DNSRequestHandler)
+    print 'DNS Listen Address  : %s:%d\n' % (hosts_content.IP,hosts_content.PORT)
     local_server.serve_forever()
     local_server.shutdown()
 

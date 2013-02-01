@@ -240,6 +240,7 @@ class Common(object):
         if self.getboolean('third', 'enable', CONFIG.has_section('third')):
             self.remove_option('third', 'enable', '')
             self.THIRD_APPS = [(k,v if v[0] in ('"',"'") else repr(v)) for k,v in self.items('third', ()) if v]
+        self.DNS_ENABLE = False
         if self.getboolean('dns', 'enable', CONFIG.has_section('dns')):
             self.DNS_ENABLE       = True
             self.DNS_CONFIG_FILE  = self.get('dns', 'configfile', 'hosts.ini')
