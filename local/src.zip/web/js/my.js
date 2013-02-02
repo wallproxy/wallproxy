@@ -62,3 +62,6 @@ $(document).on('pagecreate', '#config_py', function(){
 $(document).on('pagecreate', '#userlist_ini', function(){
 	show_editor($(this), '自定义规则', 'userlist.ini');
 });
+$(document).on('pagecreate', '#dns_ini', function(){
+	show_editor($(this), 'DNS代理', 'dns.ini');
+});

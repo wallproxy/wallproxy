@@ -62,18 +62,16 @@ class DNSRequestHandler(BaseRequestHandler):
         if tcp_socket: tcp_socket.close()
         return ""
 
-def launcher(host_file_loc = "hosts.ini"):
+def launcher(host_file_loc = "hosts.ini", register_stop=None):
     global hosts_content
+    print 'Initilizing DNS Proxy...'
     hosts_content = HostsParser(host_file_loc)
     local_server = LocalThreadingDNSServer((hosts_content.IP, hosts_content.PORT), DNSRequestHandler)
-    print 'DNS Listen Address  : %s:%d\n' % (hosts_content.IP,hosts_content.PORT)
+    print '  DNS Listen Address  : %s:%d' % (hosts_content.IP,hosts_content.PORT)
+    if register_stop:
+        register_stop(local_server.shutdown)
+    print '  DNS Proxy Started Successful!'
     local_server.serve_forever()
-    local_server.shutdown()
-
-def wp_start(host_file_loc):
-    print "Initilizing DNS Proxy..."
-    thread.start_new_thread(launcher,(host_file_loc,))
-    print "DNS Proxy Started Successful!"
 
 if __name__ == "__main__":
     launcher()

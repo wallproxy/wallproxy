@@ -236,13 +236,12 @@ class Common(object):
                 v = v.replace('|', ' ').strip()
                 if k and v: self.HOSTS[k] = v
 
-        self.THIRD_APPS = None
+        self.THIRD_APPS = []
         if self.getboolean('third', 'enable', CONFIG.has_section('third')):
             self.remove_option('third', 'enable', '')
             self.THIRD_APPS = [(k,v if v[0] in ('"',"'") else repr(v)) for k,v in self.items('third', ()) if v]
-        self.DNS_ENABLE = False
+        self.DNS_CONFIG_FILE = None
         if self.getboolean('dns', 'enable', CONFIG.has_section('dns')):
-            self.DNS_ENABLE       = True
             self.DNS_CONFIG_FILE  = self.get('dns', 'configfile', 'hosts.ini')
 
         self.USERAGENT_STRING   = self.getboolean('useragent', 'enable', True) and self.get('useragent', 'string', '')
@@ -420,9 +419,6 @@ forward_timeout = {{!FORWARD_TIMEOUT or None}}
 debuglevel = {{!DEBUG_LEVEL}}
 %end
 check_update = 0
-%if DNS_ENABLE:
-dns_config_file = {{!DNS_CONFIG_FILE}}
-%end
 
 def config():
     Forward, set_dns, set_resolve, set_hosts, check_auth, redirect_https = import_from('util')
@@ -633,20 +629,16 @@ def config():
 %end #PAC_FILE
 %NEED_PAC = NEED_PAC != 'PAC_ENABLE' or PAC_ENABLE
 %end #PAC_ENABLE
-%if THIRD_APPS:
+%if THIRD_APPS or DNS_CONFIG_FILE:
 
     from plugins import third; third = install('third', third)
 %for k,v in THIRD_APPS:
     third.run({{v}}) #{{k}}
 %end
+%if DNS_CONFIG_FILE:
+    third.dns_proxy({{!DNS_CONFIG_FILE}})
 %end
-%if DNS_ENABLE:
-
-    from dns_proxy_launcher import dns_proxy
-    dns_proxy = install("DNS Proxy", dns_proxy)
-    dns_proxy.start()
 %end
-
 
 %if USERNAME:
     auth_checker = check_auth({{!USERNAME}}, {{!PASSWORD}}\\

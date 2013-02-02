@@ -608,4 +608,10 @@ def third(daemons={}, modules=[]):
             if getattr(mod, 'register_stop', None) is register_stop:
                 del mod.register_stop
 
-    globals().update(run=run)
+    def dns_proxy(dns_config_file):
+        mod = __import__('DNS Proxy', None, None, ['dns_proxy'])
+        dns_config_file = os.path.join(utils.misc_dir, dns_config_file)
+        thread.start_new_thread(mod.dns_proxy.launcher,
+            (dns_config_file, config.server_stop.append))
+
+    globals().update(run=run, dns_proxy=dns_proxy)
