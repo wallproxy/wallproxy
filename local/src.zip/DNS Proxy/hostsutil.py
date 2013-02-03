@@ -26,6 +26,7 @@ class HostsParser:
         for host_line in hosts_content:
             if host_line.startswith("!") or host_line in ("\n", "\r\n"): continue
             rule_matched_content = HostsParser.RULE_REGEX.search(host_line)
+            if rule_matched_content is None: continue
             priority = rule_matched_content.group(2)
             ip_type = Rule.TYPE_REQUEST if rule_matched_content.group(4) is None else Rule.TYPE_A
             ip_list = rule_matched_content.group(3) if ip_type == Rule.TYPE_A else config.get("DNS Config", rule_matched_content.group(3))
