@@ -690,9 +690,12 @@ hosts_rules.match(url, host):
 %end
         if truehttps_sites.match(host): return FORWARD
 %end
+%else:
+    def find_gae_handler(req):
+        if req.proxy_type.endswith('http'): return GAE
+%end #GAE_HANDLER
     paas.data['GAE_server'].find_handler = find_gae_handler
 
-%end #GAE_HANDLER
 %if USERNAME:
     @auth_checker
 %end
