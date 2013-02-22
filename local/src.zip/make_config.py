@@ -30,9 +30,12 @@ class Common(object):
             if v.startswith('!'):
                 if self.PAC_FILE:
                     v = self.items(v.lstrip('!').strip(), ())
+                    v = [(v.split('|'),k.upper()) for k,v in v if k and v]
                 else:
                     v = self.items('py_'+v.lstrip('!').strip(), ())
-                PAC_RULELIST   = [(v.split('|'),k.upper()) for k,v in v if k and v]
+                    sp = {'FORBID':'False', 'WEB':'None'}
+                    v = [(v.split('|'),sp.get(k.upper()) or k.upper()) for k,v in v if k and v]
+                PAC_RULELIST = v
             elif v:
                 TARGET_PAC = self.TARGET_PAAS
                 if self.PAC_FILE:
@@ -429,7 +432,7 @@ def config():
 %if DNS_RESOLVE:
     set_resolve({{!DNS_RESOLVE}})
 %end
-%HTTPS_TARGET = {'FORWARD': 'FORWARD'}
+%HTTPS_TARGET = {'FORWARD':'FORWARD', 'False':'False', 'None':'None'}
     google_sites = {{!GOOGLE_SITES}}
     google_hosts = {{!GOOGLE_HOSTS}}
     set_hosts(google_sites, google_hosts)
