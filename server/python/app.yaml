@@ -9,6 +9,10 @@ handlers:
   script: wsgi.app
   secure: optional
 
+- url: /2
+  script: comp.gae_application
+  secure: optional
+
 - url: /robots.txt
   static_files: robots.txt
   upload: robots.txt
