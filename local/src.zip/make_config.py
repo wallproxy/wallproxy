@@ -173,7 +173,13 @@ class Common(object):
                 PROXIES.append('http://%s:%s' % (PROXY_HOST, PROXY_PORT))
             self.GLOBAL_PROXY   = PROXIES[0] if len(PROXIES) == 1 else tuple(PROXIES)
 
-        self.PAC_ENABLE         = self.getboolean('pac', 'enable', True)
+        self.HTTPS_TARGET = {}
+        if self.getboolean('forward', 'enable', CONFIG.has_section('forward')):
+            self.remove_option('forward', 'enable', '')
+            for k,v in self.items('forward', ()):
+                self.HTTPS_TARGET[k.upper()] = '(%s)'%v if '"' in v or "'" in v else repr(v)
+
+        self.PAC_ENABLE = self.getboolean('pac', 'enable', True)
         v = self.getint('pac', 'https_mode', 1)
         self.PAC_HTTPSMODE = 0 if v <= 0 else (2 if v >= 2 else 1)
         v = self.get('pac', 'file', '').replace('goagent', 'proxy')
@@ -425,6 +431,10 @@ check_update = 0
 
 def config():
     Forward, set_dns, set_resolve, set_hosts, check_auth, redirect_https = import_from('util')
+%for k,v in HTTPS_TARGET.iteritems():
+    {{k}} = Forward({{v}})
+%HTTPS_TARGET[k] = k
+%end
     FORWARD = Forward()
 %if REMOTE_DNS:
     set_dns({{REMOTE_DNS}})
@@ -432,7 +442,7 @@ def config():
 %if DNS_RESOLVE:
     set_resolve({{!DNS_RESOLVE}})
 %end
-%HTTPS_TARGET = {'FORWARD':'FORWARD', 'False':'False', 'None':'None'}
+%HTTPS_TARGET.update({'FORWARD':'FORWARD', 'False':'False', 'None':'None'})
     google_sites = {{!GOOGLE_SITES}}
     google_hosts = {{!GOOGLE_HOSTS}}
     set_hosts(google_sites, google_hosts)
