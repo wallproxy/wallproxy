@@ -442,7 +442,6 @@ def config():
 %if DNS_RESOLVE:
     set_resolve({{!DNS_RESOLVE}})
 %end
-%HTTPS_TARGET.update({'FORWARD':'FORWARD', 'False':'False', 'None':'None'})
     google_sites = {{!GOOGLE_SITES}}
     google_hosts = {{!GOOGLE_HOSTS}}
     set_hosts(google_sites, google_hosts)
@@ -451,6 +450,10 @@ def config():
     set_hosts({{!k}}, {{repr(v) if v != GOOGLE_HOSTS else 'google_hosts'}})
 %end
 %end
+
+    from plugins import misc; misc = install('misc', misc)
+    PAGE = misc.Page('page.html')
+%HTTPS_TARGET.update({'FORWARD':'FORWARD', 'False':'False', 'None':'None','PAGE':'None'})
 %if TARGET_PAAS:
 
     from plugins import paas; paas = install('paas', paas)

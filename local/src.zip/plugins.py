@@ -615,3 +615,30 @@ def third(daemons={}, modules=[]):
             (dns_config_file, config.server_stop.append))
 
     globals().update(run=run, dns_proxy=dns_proxy)
+
+def misc():
+    import os
+
+    def Page(file):
+        HeaderDict = utils.HeaderDict
+        version = utils.__version__
+        listen = 'http://%s/' % utils.unparse_netloc(utils.get_main_address(), 80)
+        file = os.path.join(utils.misc_dir, file)
+        try:
+            with open(file, 'rb') as fp: tpl = fp.read()
+        except IOError:
+            tpl = ''
+        def handler(req):
+            req.handler_name = 'PAGE'
+            if req.content_length > 1 * 1024 * 1024:
+                return req.send_error(413)
+            data = tpl.format(listen=listen, version=version, req=req,
+                    server=req.server_address, client=req.client_address,
+                    method=req.command, url=req.url, body=req.read_body())
+            headers = HeaderDict()
+            headers['Content-Length'] = str(len(data))
+            req.start_response(200, headers)
+            req.socket.sendall(data)
+        return handler
+
+    globals().update(Page=Page)
