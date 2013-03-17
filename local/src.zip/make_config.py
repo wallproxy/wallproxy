@@ -663,6 +663,7 @@ def config():
 %end
 )
 %end #USERNAME
+%if GAE_ENABLE:
 %if GAE_HANDLER:
 %if USERNAME:
     @auth_checker
@@ -712,6 +713,7 @@ hosts_rules.match(url, host):
 %end #GAE_HANDLER
     paas.data['GAE_server'].find_handler = find_gae_handler
 
+%end #GAE_ENABLE
 %if USERNAME:
     @auth_checker
 %end
@@ -764,9 +766,6 @@ hosts_rules.match(url, host):
 %else:
             return FORWARD
 %end
-%if not TARGET_PAAS:
-        return FORWARD
-%else:
 %if TRUE_HTTPS:
 %if NOTRUE_HTTPS:
         if notruehttps_sites.match(host): return
@@ -774,23 +773,17 @@ hosts_rules.match(url, host):
         if truehttps_sites.match(host): return FORWARD
 %end
 %if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE != 1:
-        elif proxy_type.endswith('https'):
 %if PAC_RULELIST and PAC_HTTPSMODE == 2:
-            url = 'https://%s/' % unparse_netloc((host, port), 443)
-            for rule,target in httpslist:
-                if rule.match(url, host):
-                    return target
+        url = 'https://%s/' % unparse_netloc((host, port), 443)
+        for rule,target in httpslist:
+            if rule.match(url, host):
+                return target
 %end
 %if PAC_IPLIST:
-            return findHttpsProxyByIpList(host)
-%else:
-            return {{HTTPS_TARGET[PAC_DEFAULT[0]]}}
-%end
-%elif SOCKS5_ENABLE:
-        elif proxy_type == 'socks5':
-            return SOCKS5
+        return findHttpsProxyByIpList(host)
 %end
 %end
+        return {{HTTPS_TARGET[PAC_DEFAULT[0]]}}
 %else:
         return FORWARD
 %end
