@@ -20,11 +20,13 @@ class Common(object):
     del k, v
 
     def parse_pac_config(self):
+        v = self.get('pac', 'py_default', '') or 'FORWARD'
+        self.PY_DEFAULT = (v.split('|') * 3)[:3]
         if self.PAC_FILE:
-            PAC_DEFAULT = self.get('pac', 'default', '') or self._PAC_DEFAULT
+            v = self.get('pac', 'default', '') or self._PAC_DEFAULT
+            self.PAC_DEFAULT = (v.split('|') * 3)[:3]
         else:
-            PAC_DEFAULT = self.get('pac', 'py_default', '') or 'FORWARD'
-        self.PAC_DEFAULT = (PAC_DEFAULT.split('|') * 3)[:3]
+            self.PAC_DEFAULT = self.PY_DEFAULT
         def get_rule_cfg(key, default):
             PAC_RULELIST = v = self.get('pac', key, default)
             if v.startswith('!'):
@@ -596,6 +598,7 @@ def config():
 %if TARGET_PAAS:
     FORWARD.http_failed_handler = {{TARGET_PAAS}}
 %end
+%PY_DEFAULT = (([v for v in PY_DEFAULT if v in HTTPS_TARGET] or ['FORWARD']) * 3)[:3]
 %if PAC_ENABLE:
 %if PAC_FILE:
 %PAC_ENABLE = 0
@@ -612,7 +615,7 @@ def config():
     )
     PacFile(rulelist, iplist, {{!PAC_FILE}}, {{!PAC_DEFAULT}})
 %else:
-%PAC_DEFAULT = ([v for v in PAC_DEFAULT if v in HTTPS_TARGET] * 3)[:3]
+%PAC_DEFAULT = PY_DEFAULT
 %PAC_RULELIST = [(k,v) for k,v in PAC_RULELIST if v in HTTPS_TARGET]
 %PAC_IPLIST = [(k,v) for k,v in PAC_IPLIST if v in HTTPS_TARGET]
 %PAC_ENABLE = PAC_RULELIST or PAC_IPLIST
@@ -765,7 +768,7 @@ hosts_rules.match(url, host):
 %if PAC_IPLIST:
             return findHttpProxyByIpList(host)
 %else:
-            return {{PAC_DEFAULT[0]}}
+            return {{PY_DEFAULT[0]}}
 %end
 %elif TARGET_PAAS:
             return {{TARGET_PAAS}}
@@ -789,7 +792,7 @@ hosts_rules.match(url, host):
         return findHttpsProxyByIpList(host)
 %end
 %end
-        return {{HTTPS_TARGET[PAC_DEFAULT[0]]}}
+        return {{HTTPS_TARGET[PY_DEFAULT[0]]}}
 %else:
         return FORWARD
 %end
