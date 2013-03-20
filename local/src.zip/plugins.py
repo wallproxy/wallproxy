@@ -634,7 +634,8 @@ def misc():
                 return req.send_error(413)
             data = tpl.format(listen=listen, version=version, req=req,
                     server=req.server_address, client=req.client_address,
-                    method=req.command, url=req.url, body=req.read_body())
+                    method=req.command, url=req.url, headers=req.headers,
+                    body=req.read_body())
             headers = HeaderDict()
             headers['Content-Length'] = str(len(data))
             req.start_response(200, headers)
