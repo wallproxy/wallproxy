@@ -176,7 +176,7 @@ def paas():
                                 print 'GAE: switch scheme to https'
                     elif isinstance(e, socket.error):
                         k = e.args[0]
-                        if url.scheme != 'https' and k in (10054, 54, 20054):
+                        if url.scheme != 'https' and k in (10054, 54, 20054, 104):
                             ti -= 1
                             url.scheme = 'https'; url.port = 443; flag |= 3
                             print 'GAE: switch scheme to https'
@@ -186,7 +186,7 @@ def paas():
                             print 'GAE: switch host to %s' % self.hosts[0]
                         else:
                             errors.append('Connect fetchserver failed: %s' % e)
-                            if del_bad_hosts() and k in (10054, 54, 20054, 10047): ti -= 1
+                            if del_bad_hosts() and k in (10054, 54, 20054, 104, 10047): ti -= 1
                     else:
                         errors.append('Connect fetchserver failed: %s' % e)
                     if flag & 1:
