@@ -4,14 +4,8 @@ from __future__ import with_statement
 def paas():
     # this part is compatible with goagent 1.1.0 by phus.lu@gmail.com and others
     print 'Initializing PAAS for proxy based on cloud service.'
-    class Hack(object):
-        set_hosts, Forward = config.import_from('util')
-        (HeaderDict, Proxy, URLInfo, unparse_netloc, del_bad_hosts
-            ) = config.import_from(utils)
-        v = (set_hosts, Forward, HeaderDict, Proxy, URLInfo, unparse_netloc,
-            del_bad_hosts)
-    (set_hosts, Forward, HeaderDict, Proxy, URLInfo, unparse_netloc, del_bad_hosts
-        ) = Hack.v
+    set_hosts, Forward = config.import_from('util')
+    HeaderDict, Proxy, URLInfo, unparse_netloc, del_bad_hosts = config.import_from(utils)
     import re, zlib, socket, struct, time, random, threading
     from binascii import a2b_hex, b2a_hex
     from base64 import b64encode
@@ -155,6 +149,7 @@ def paas():
                     if isinstance(e, HTTPError):
                         errors.append(str(e))
                         if e.code == 503:
+                            errors[-1] = 'Bandwidth Over Quota, please add more APPIDs'
                             ti -= 1
                             if server:
                                 url = self.url; server.__init__(url); server = None
