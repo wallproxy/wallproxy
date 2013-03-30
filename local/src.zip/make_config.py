@@ -601,7 +601,7 @@ def config():
 %PY_DEFAULT = (([v for v in PY_DEFAULT if v in HTTPS_TARGET] or ['FORWARD']) * 3)[:3]
 %if PAC_ENABLE:
 %if PAC_FILE:
-%PAC_ENABLE = 0
+%NEED_PAC = NEED_PAC != 'PAC_ENABLE'
 
     rulelist = (
 %for k,v in PAC_RULELIST:
@@ -619,6 +619,7 @@ def config():
 %PAC_RULELIST = [(k,v) for k,v in PAC_RULELIST if v in HTTPS_TARGET]
 %PAC_IPLIST = [(k,v) for k,v in PAC_IPLIST if v in HTTPS_TARGET]
 %PAC_ENABLE = PAC_RULELIST or PAC_IPLIST
+%NEED_PAC = NEED_PAC != 'PAC_ENABLE' or PAC_ENABLE
 %if PAC_RULELIST:
 
     rulelist = (
@@ -646,7 +647,6 @@ def config():
     findHttpsProxyByIpList = makeIpFinder(iplist, [{{', '.join([HTTPS_TARGET[v] for v in PAC_DEFAULT])}}])
 %end #PAC_IPLIST
 %end #PAC_FILE
-%NEED_PAC = NEED_PAC != 'PAC_ENABLE' or PAC_ENABLE
 %end #PAC_ENABLE
 %if THIRD_APPS or DNS_CONFIG_FILE:
 
@@ -781,8 +781,8 @@ hosts_rules.match(url, host):
 %end
         if truehttps_sites.match(host): return FORWARD
 %end
-%if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE != 1:
-%if PAC_RULELIST and PAC_HTTPSMODE == 2:
+%if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE == 2:
+%if PAC_RULELIST:
         url = 'https://%s/' % unparse_netloc((host, port), 443)
         for rule,target in httpslist:
             if rule.match(url, host):
@@ -790,9 +790,12 @@ hosts_rules.match(url, host):
 %end
 %if PAC_IPLIST:
         return findHttpsProxyByIpList(host)
-%end
-%end
+%else:
         return {{HTTPS_TARGET[PY_DEFAULT[0]]}}
+%end
+%elif PAC_ENABLE and PAC_HTTPSMODE == 0:
+        return {{HTTPS_TARGET[PY_DEFAULT[0]]}}
+%end
 %else:
         return FORWARD
 %end
