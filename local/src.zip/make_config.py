@@ -46,7 +46,7 @@ class Common(object):
                         TARGET_PAC = '*:*'
                     elif ':' not in TARGET_PAC:
                         TARGET_PAC = '*:' + TARGET_PAC
-                    TARGET_PAC = 'PROXY %s; DIRECT' % TARGET_PAC
+                    TARGET_PAC = 'PROXY %s;DIRECT' % TARGET_PAC
                 PAC_RULELIST = [(v.split('|'), TARGET_PAC)]
             return PAC_RULELIST
         self.PAC_RULELIST = get_rule_cfg('rulelist', '')
@@ -169,7 +169,7 @@ class Common(object):
                 PROXY_PORT      = CONFIG.getint('proxy', 'port')
                 PROXY_USERNAME  = self.get('proxy', 'username', '')
                 PROXY_PASSWROD  = self.get('proxy', 'password', '')
-                self._PAC_DEFAULT= 'PROXY %s:%s; DIRECT' % (PROXY_HOST, PROXY_PORT)
+                self._PAC_DEFAULT= 'PROXY %s:%s;DIRECT' % (PROXY_HOST, PROXY_PORT)
                 if PROXY_USERNAME:
                     PROXY_HOST = '%s:%s@%s' % (PROXY_USERNAME, PROXY_PASSWROD, PROXY_HOST)
                 PROXIES.append('http://%s:%s' % (PROXY_HOST, PROXY_PORT))
@@ -182,7 +182,7 @@ class Common(object):
                 self.HTTPS_TARGET[k.upper()] = '(%s)'%v if '"' in v or "'" in v else repr(v)
 
         self.PAC_ENABLE = self.getboolean('pac', 'enable', True)
-        v = self.getint('pac', 'https_mode', 1)
+        v = self.getint('pac', 'https_mode', 2)
         self.PAC_HTTPSMODE = 0 if v <= 0 else (2 if v >= 2 else 1)
         v = self.get('pac', 'file', '').replace('goagent', 'proxy')
         self.PAC_FILE = v and v.split('|')
@@ -787,7 +787,7 @@ hosts_rules.match(url, host):
 %else:
         return {{HTTPS_TARGET[PY_DEFAULT[0]]}}
 %end
-%elif PAC_ENABLE and PAC_HTTPSMODE == 0:
+%elif PAC_HTTPSMODE == 0:
         return {{HTTPS_TARGET[PY_DEFAULT[0]]}}
 %end
 %else:
