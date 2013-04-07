@@ -633,7 +633,7 @@ def config():
         (rulelist[{{i}}][0], {{HTTPS_TARGET[k[1]]}}),
 %end #PAC_RULELIST
     )
-    unparse_netloc = import_from(install('utils', lambda:globals().update(vars(utils))))
+    unparse_netloc = import_from('utils')
 %end #PAC_HTTPSMODE
 %end #PAC_RULELIST
 %if PAC_IPLIST:
