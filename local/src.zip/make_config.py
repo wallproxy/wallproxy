@@ -8,6 +8,8 @@ smartladder8|sandaojushi3|ftencentuck|baidufirefoxtieba|chromeichi|aitaiyokani|s
 import ConfigParser, os, re, urlparse, os.path as ospath, random
 from cStringIO import StringIO
 
+rulefiles = lambda v:[v.replace(r'\n','\n') if v.startswith('string://') else v for v in v.split('|')]
+
 class Common(object):
     v = '''def %s(self, *a):
     try:
@@ -32,11 +34,11 @@ class Common(object):
             if v.startswith('!'):
                 if self.PAC_FILE:
                     v = self.items(v.lstrip('!').strip(), ())
-                    v = [(v.split('|'),k.upper()) for k,v in v if k and v]
+                    v = [(rulefiles(v),k.upper()) for k,v in v if k and v]
                 else:
                     v = self.items('py_'+v.lstrip('!').strip(), ())
                     sp = {'FORBID':'False', 'WEB':'None'}
-                    v = [(v.split('|'),sp.get(k.upper()) or k.upper()) for k,v in v if k and v]
+                    v = [(rulefiles(v),sp.get(k.upper()) or k.upper()) for k,v in v if k and v]
                 PAC_RULELIST = v
             elif v:
                 TARGET_PAC = self.TARGET_PAAS
@@ -47,7 +49,7 @@ class Common(object):
                     elif ':' not in TARGET_PAC:
                         TARGET_PAC = '*:' + TARGET_PAC
                     TARGET_PAC = 'PROXY %s;DIRECT' % TARGET_PAC
-                PAC_RULELIST = [(v.split('|'), TARGET_PAC)]
+                PAC_RULELIST = [(rulefiles(v), TARGET_PAC)]
             return PAC_RULELIST
         self.PAC_RULELIST = get_rule_cfg('rulelist', '')
         self.PAC_IPLIST = get_rule_cfg('iplist', '')
@@ -207,11 +209,11 @@ class Common(object):
         self.FETCHMAX_SERVER    = self.getint('fetchmax', 'server', 0)
 
         self.AUTORANGE_ENABLE   = self.getboolean('autorange', 'enable', False)
-        def get_rules(opt, key):
-            v = self.get(opt, key, '')
+        def get_rules(opt, key, d=''):
+            v = self.get(opt, key, d)
             if v.startswith('!'):
                 v = v.lstrip('!').strip()
-                return v and v.split('|')
+                return v and rulefiles(v)
             else:
                 return v.replace(r'\n', '\n').strip()
         self.AUTORANGE_RULES = get_rules('autorange', 'rules')
@@ -255,6 +257,8 @@ class Common(object):
         self.USERAGENT_STRING   = self.getboolean('useragent', 'enable', True) and self.get('useragent', 'string', '')
         self.USERAGENT_MATCH    = self.USERAGENT_STRING and self.get('useragent', 'match', '')
         self.USERAGENT_RULES    = self.USERAGENT_MATCH and get_rules('useragent', 'rules')
+        self.FALLBACK_RULES     = self.TARGET_PAAS and get_rules('urlfetch', 'nofallback',
+            r'/^https?:\/\/(?:[\w-]+|127(?:\.\d+){3}|10(?:\.\d+){3}|192\.168(?:\.\d+){2}|172\.[1-3]\d(?:\.\d+){2}|\[.+?\])(?::\d+)?\//')
 
         self.AUTORANGE_RULES    = (self.GAE_ENABLE or self.OLD_PLUGIN) and self.AUTORANGE_ENABLE and self.AUTORANGE_RULES
         self.PAC_ENABLE         = (self.PAC_RULELIST or self.PAC_IPLIST) and self.PAC_ENABLE and 'PAC_ENABLE'
@@ -266,7 +270,7 @@ class Common(object):
                 self.HOSTS_RULES = ' \n '.join((self.HOSTS_RULES, v))
             else:
                 self.HOSTS_RULES.append('string://' + v)
-        self.NEED_PAC           = self.GOOGLE_FORCEHTTPS or self.USERAGENT_RULES or self.AUTORANGE_RULES or self.CRLF_RULES or self.HOSTS_RULES or self.GOOGLE_WITHGAE or self.PAC_ENABLE
+        self.NEED_PAC           = self.GOOGLE_FORCEHTTPS or self.USERAGENT_RULES or self.FALLBACK_RULES or self.AUTORANGE_RULES or self.CRLF_RULES or self.HOSTS_RULES or self.GOOGLE_WITHGAE or self.PAC_ENABLE
 
 
 def tob(s, enc='utf-8'):
@@ -434,7 +438,7 @@ def config():
     {{k}} = Forward({{v}})
 %HTTPS_TARGET[k] = k
 %end
-    FORWARD = Forward()
+    RAW_FORWARD = FORWARD = Forward()
 %if REMOTE_DNS:
     set_dns({{REMOTE_DNS}})
 %end
@@ -452,7 +456,7 @@ def config():
 
     from plugins import misc; misc = install('misc', misc)
     PAGE = misc.Page('page.html')
-%HTTPS_TARGET.update({'FORWARD':'FORWARD', 'False':'False', 'None':'None','PAGE':'None'})
+%HTTPS_TARGET.update({'FORWARD':'FORWARD', 'RAW_FORWARD':'RAW_FORWARD', 'False':'False', 'None':'None','PAGE':'None'})
 %if TARGET_PAAS:
 
     from plugins import paas; paas = install('paas', paas)
@@ -593,7 +597,24 @@ def config():
     hosts_rules = RuleList({{!HOSTS_RULES}})
 %end #HOSTS_RULES
 %if TARGET_PAAS:
-    FORWARD.http_failed_handler = {{TARGET_PAAS}}
+    _HttpsFallback = ({{TARGET_PAAS}},)
+%if FALLBACK_RULES:
+    nofallback_rules = RuleList({{!FALLBACK_RULES}})
+    def FORWARD(req):
+        if req.proxy_type.endswith('http'):
+            if nofallback_rules.match(req.url, req.proxy_host[0]):
+                return RAW_FORWARD(req)
+            return RAW_FORWARD(req, {{TARGET_PAAS}})
+        url = 'https://%s/' % unparse_netloc(req.proxy_host, 443)
+        if nofallback_rules.match(url, req.proxy_host[0]):
+            return RAW_FORWARD(req)
+        return RAW_FORWARD(req, _HttpsFallback)
+%else:
+    def FORWARD(req):
+        if req.proxy_type.endswith('http'):
+            return RAW_FORWARD(req, {{TARGET_PAAS}})
+        return RAW_FORWARD(req, _HttpsFallback)
+%end
 %end
 %PY_DEFAULT = (([v for v in PY_DEFAULT if v in HTTPS_TARGET] or ['FORWARD']) * 3)[:3]
 %if PAC_ENABLE:
@@ -693,7 +714,7 @@ def config():
 %if CRLF_RULES:
             if crlf_rules.match(url, host):
                 req.crlf = {{HOSTS_CRLF}}
-                return FORWARD
+                return RAW_FORWARD
 %end
 %if HOSTS_RULES:
             if \\
@@ -701,14 +722,14 @@ def config():
 not needhttps and \\
 %end
 hosts_rules.match(url, host):
-                return FORWARD
+                return RAW_FORWARD
 %end
             return GAE
 %if TRUE_HTTPS:
 %if NOTRUE_HTTPS:
         if notruehttps_sites.match(host): return
 %end
-        if truehttps_sites.match(host): return FORWARD
+        if truehttps_sites.match(host): return RAW_FORWARD
 %end
 %else:
     def find_gae_handler(req):
@@ -743,7 +764,7 @@ hosts_rules.match(url, host):
 %if CRLF_RULES:
             if crlf_rules.match(url, host):
                 req.crlf = {{HOSTS_CRLF}}
-                return FORWARD
+                return RAW_FORWARD
 %end
 %if HOSTS_RULES:
             if \\
@@ -751,7 +772,7 @@ hosts_rules.match(url, host):
 not needhttps and \\
 %end
 hosts_rules.match(url, host):
-                return FORWARD
+                return RAW_FORWARD
 %end
 %if PAC_ENABLE and not PAC_FILE:
 %if PAC_RULELIST:
@@ -773,7 +794,7 @@ hosts_rules.match(url, host):
 %if NOTRUE_HTTPS:
         if notruehttps_sites.match(host): return
 %end
-        if truehttps_sites.match(host): return FORWARD
+        if truehttps_sites.match(host): return RAW_FORWARD
 %end
 %if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE == 2:
 %if PAC_RULELIST:
