@@ -605,7 +605,7 @@ def config():
             if nofallback_rules.match(req.url, req.proxy_host[0]):
                 return RAW_FORWARD(req)
             return RAW_FORWARD(req, {{TARGET_PAAS}})
-        url = 'https://%s/' % unparse_netloc(req.proxy_host, 443)
+        url = build_fake_url(req.proxy_type, req.proxy_host)
         if nofallback_rules.match(url, req.proxy_host[0]):
             return RAW_FORWARD(req)
         return RAW_FORWARD(req, _HttpsFallback)
@@ -652,6 +652,11 @@ def config():
 %end #PAC_RULELIST
     )
     unparse_netloc = import_from('utils')
+    def build_fake_url(type, host):
+        if type == 'https': port = 443
+        elif host[1] % 1000 == 443: type, port = 'https', 443
+        else: type, port = 'http', 80
+        return '%s://%s/' % (type, unparse_netloc(host, port))
 %end #PAC_HTTPSMODE
 %end #PAC_RULELIST
 %if PAC_IPLIST:
@@ -798,7 +803,7 @@ hosts_rules.match(url, host):
 %end
 %if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE == 2:
 %if PAC_RULELIST:
-        url = 'https://%s/' % unparse_netloc((host, port), 443)
+        url = build_fake_url(proxy_type, (host, port))
         for rule,target in httpslist:
             if rule.match(url, host):
                 return target
