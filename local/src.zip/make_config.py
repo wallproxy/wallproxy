@@ -68,7 +68,7 @@ class Common(object):
                 pass
             CONFIG.readfp(StringIO(v), INPUT)
 
-        self.LISTEN_IP          = self.get('listen', 'ip', '127.0.0.1')
+        self.LISTEN_IP          = self.get('listen', 'ip', '0.0.0.0')
         self.LISTEN_PORT        = self.getint('listen', 'port', 8086)
         self.USERNAME           = self.get('listen', 'username', None)
         self.WEB_USERNAME       = self.get('listen', 'web_username', 'admin')
@@ -562,6 +562,10 @@ def config():
 %if NEED_PAC:
 
     PacFile, RuleList, HostList = import_from('pac')
+    def apnic_parser(data):
+        from re import findall
+        return '\n'.join(findall(r'(?i)\|cn\|ipv4\|((?:\d+\.){3}\d+\|\d+)\|', data))
+%PAC_IPLIST = [('[%s]'%(', '.join(('(%r, apnic_parser)'%i) if 'delegated-apnic-latest' in i else repr(i) for i in v)),t) for v,t in PAC_IPLIST]
 %end #NEED_PAC
 %if GOOGLE_FORCEHTTPS:
     forcehttps_sites = RuleList({{!GOOGLE_FORCEHTTPS}})
@@ -628,7 +632,7 @@ def config():
     )
     iplist = (
 %for k,v in PAC_IPLIST:
-        ({{!k}}, {{!v}}),
+        ({{k}}, {{!v}}),
 %end #PAC_IPLIST
     )
     PacFile(rulelist, iplist, {{!PAC_FILE}}, {{!PAC_DEFAULT}})
@@ -663,7 +667,7 @@ def config():
     IpList, makeIpFinder = import_from('pac')
     iplist = (
 %for k,v in PAC_IPLIST:
-        (IpList({{!k}}), {{v}}),
+        (IpList({{k}}), {{v}}),
 %end #PAC_IPLIST
     )
     findHttpProxyByIpList = makeIpFinder(iplist, [{{', '.join(PAC_DEFAULT)}}])
@@ -829,7 +833,7 @@ def make_config(INPUT=None, OUTPUT=None):
         elif OUTPUT:
             INPUT = ospath.join(ospath.dirname(OUTPUT), 'proxy.ini')
         else:
-            if '__loader__' in globals() and __loader__:
+            if globals().get('__loader__'):
                 DIR = ospath.dirname(__loader__.archive)
             else:
                 DIR = ospath.dirname(__file__)
