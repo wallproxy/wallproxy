@@ -603,6 +603,12 @@ def config():
 %if HOSTS_RULES:
     hosts_rules = RuleList({{!HOSTS_RULES}})
 %end #HOSTS_RULES
+    unparse_netloc = import_from('utils')
+    def build_fake_url(type, host):
+        if type == 'https': port = 443
+        elif host[1] % 1000 == 443: type, port = 'https', 443
+        else: type, port = 'http', 80
+        return '%s://%s/' % (type, unparse_netloc(host, port))
 %if TARGET_PAAS:
     _HttpsFallback = ({{TARGET_PAAS}},)
 %if FALLBACK_RULES:
@@ -658,12 +664,6 @@ def config():
         (rulelist[{{i}}][0], {{HTTPS_TARGET[k[1]]}}),
 %end #PAC_RULELIST
     )
-    unparse_netloc = import_from('utils')
-    def build_fake_url(type, host):
-        if type == 'https': port = 443
-        elif host[1] % 1000 == 443: type, port = 'https', 443
-        else: type, port = 'http', 80
-        return '%s://%s/' % (type, unparse_netloc(host, port))
 %end #PAC_HTTPSMODE
 %end #PAC_RULELIST
 %if PAC_IPLIST:
