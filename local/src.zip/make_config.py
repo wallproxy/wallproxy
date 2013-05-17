@@ -605,8 +605,8 @@ def config():
 %end #HOSTS_RULES
     unparse_netloc = import_from('utils')
     def build_fake_url(type, host):
-        if type == 'https': port = 443
-        elif host[1] % 1000 == 443: type, port = 'https', 443
+        if (type == 'https' and host[1] != 80 or
+            host[1] % 1000 == 443): type, port = 'https', 443
         else: type, port = 'http', 80
         return '%s://%s/' % (type, unparse_netloc(host, port))
 %if TARGET_PAAS:
