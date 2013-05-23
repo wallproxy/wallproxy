@@ -259,6 +259,15 @@ class Common(object):
         self.USERAGENT_RULES    = self.USERAGENT_MATCH and get_rules('useragent', 'rules')
         self.FALLBACK_RULES     = self.TARGET_PAAS and get_rules('urlfetch', 'nofallback',
             r'/^https?:\/\/(?:[\w-]+|127(?:\.\d+){3}|10(?:\.\d+){3}|192\.168(?:\.\d+){2}|172\.[1-3]\d(?:\.\d+){2}|\[.+?\])(?::\d+)?\//')
+        v = self.get('urlfetch', 'redirects', '')
+        try:
+            if v.startswith('!'):
+                with open(ospath.join(ospath.dirname(INPUT), 'misc', v.lstrip('!').strip()), 'U') as fp:
+                    v = fp.read()
+            for p,r in eval(v): ''+p+r
+            self.REDIRECT_RULES = '(%s)'%v
+        except:
+            self.REDIRECT_RULES = ''
 
         self.AUTORANGE_RULES    = (self.GAE_ENABLE or self.OLD_PLUGIN) and self.AUTORANGE_ENABLE and self.AUTORANGE_RULES
         self.PAC_ENABLE         = (self.PAC_RULELIST or self.PAC_IPLIST) and self.PAC_ENABLE and 'PAC_ENABLE'
@@ -456,6 +465,9 @@ def config():
 
     from plugins import misc; misc = install('misc', misc)
     PAGE = misc.Page('page.html')
+%if REDIRECT_RULES:
+    redirect_rules = misc.Redirects({{REDIRECT_RULES}})
+%end
 %HTTPS_TARGET.update({'FORWARD':'FORWARD', 'RAW_FORWARD':'RAW_FORWARD', 'False':'False', 'None':'None','PAGE':'None'})
 %if TARGET_PAAS:
 
@@ -720,6 +732,10 @@ def config():
                 req._r = url
                 return redirect_https
 %end
+%if REDIRECT_RULES:
+            handler = redirect_rules(req)
+            if handler: return handler
+%end
 %if CRLF_RULES:
             if crlf_rules.match(url, host):
                 req.crlf = {{HOSTS_CRLF}}
@@ -769,6 +785,10 @@ hosts_rules.match(url, host):
             if needhttps and getattr(req, '_r', '') != url:
                 req._r = url
                 return redirect_https
+%end
+%if REDIRECT_RULES:
+            handler = redirect_rules(req)
+            if handler: return handler
 %end
 %if CRLF_RULES:
             if crlf_rules.match(url, host):
