@@ -612,7 +612,7 @@ def third(daemons={}, modules=[]):
     globals().update(run=run, dns_proxy=dns_proxy)
 
 def misc():
-    import os
+    import os, re
 
     def Page(file):
         HeaderDict = utils.HeaderDict
@@ -637,4 +637,15 @@ def misc():
             req.socket.sendall(data)
         return handler
 
-    globals().update(Page=Page)
+    def Redirects(regexps):
+        rules = tuple((re.compile(pat),repl) for pat,repl in regexps)
+        def handler(req):
+            url = req.url
+            for pat,repl in rules:
+                loc = pat.sub(repl, url)
+                if loc != url:
+                    loc = 'Location: %s\r\n' % loc
+                    return lambda req: req.send_error(301, '', loc)
+        return handler
+
+    globals().update(Page=Page, Redirects=Redirects)
