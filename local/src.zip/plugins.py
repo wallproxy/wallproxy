@@ -606,7 +606,7 @@ def third(daemons={}, modules=[]):
     globals().update(run=run)
 
 def misc():
-    import os, re
+    import os
 
     def Page(file):
         HeaderDict = utils.HeaderDict
@@ -632,13 +632,15 @@ def misc():
         return handler
 
     def Redirects(regexps):
+        import re
+        from urllib import unquote
         rules = tuple((re.compile(pat),repl) for pat,repl in regexps)
         def handler(req):
             url = req.url
             for pat,repl in rules:
                 loc = pat.sub(repl, url)
                 if loc != url:
-                    loc = 'Location: %s\r\n' % loc
+                    loc = 'Location: %s\r\n' % unquote(loc)
                     return lambda req: req.send_error(301, '', loc)
         return handler
 
