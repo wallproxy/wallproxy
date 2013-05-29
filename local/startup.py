@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import sys, os, os.path as ospath
 #os.environ['DISABLE_GEVENT'] = '1'
 dir = ospath.dirname(sys.argv[0])
