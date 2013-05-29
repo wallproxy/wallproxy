@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 import sys, os.path as ospath
 dir = ospath.dirname(sys.argv[0])
 sys.argv[1:1] = [ospath.join(dir, 'uploader')]
