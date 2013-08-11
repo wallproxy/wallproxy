@@ -148,8 +148,16 @@ def paas():
                     opener.close()
                     if isinstance(e, HTTPError):
                         errors.append(str(e))
-                        if e.code == 503:
-                            errors[-1] = 'Bandwidth Over Quota, please add more APPIDs'
+                        if e.code in (503, 404):
+                            if e.code == 503:
+                                errors[-1] = 'Bandwidth Over Quota(%s)'%self.appids[0]
+                            else:
+                                errors[-1] = '%s(%s)'%(errors[-1],self.appids[0])
+                                if self.proxy.value:
+                                    self.hosts.append(self.hosts.pop(0)); flag |= 2
+                                    print 'GAE: switch host to %s' % self.hosts[0]
+                                else:
+                                    del_bad_hosts()
                             ti -= 1
                             if server:
                                 url = self.url; server.__init__(url); server = None
@@ -158,12 +166,6 @@ def paas():
                                 self.appids.append(self.appids.pop(0)); flag |= 1
                                 url.hostname = '%s.appspot.com' % self.appids[0]
                                 print 'GAE: switch appid to %s' % self.appids[0]
-                        elif e.code == 404:
-                            if self.proxy.value:
-                                self.hosts.append(self.hosts.pop(0)); flag |= 2
-                                print 'GAE: switch host to %s' % self.hosts[0]
-                            else:
-                                del_bad_hosts()
                         elif e.code == 502:
                             if url.scheme != 'https':
                                 ti -= 1
