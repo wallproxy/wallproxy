@@ -2,7 +2,7 @@
 from __future__ import with_statement
 
 PUBLIC_APPIDS = '''
-smartladder8|sandaojushi3|ftencentuck|baidufirefoxtieba|chromeichi|aitaiyokani|smartladder3|mzmzmz001|smartladder4|chrome360q|smartladder6|goagent-dup001|kawaiiushioplus|smartladdercanada|gongongid02|goagent-dup003|goagent-dup002|gonggongid03|ippotsukobeta|gonggongid01|gonggongid07|gonggongid06|kawaiiushionoserve|gonggongid04|kawaiiushio2|chromelucky|gonggongid09|yanlun001|smartladderchina|smartladder1|kawaiiushio1|kawaiiushio6|kawaiiushio7|saosaiko|kawaiiushio5|smartladderjapan|bakajing600|sekaiwakerei|yugongxisaiko|gonggongid08|smartladder2|baiduchrometieba|kawaiiushio4|gonggongid05|bakabaka300|fangbingxingtodie|f360uck|chromesaiko|chromeqq|kawaiiushio|ilovesmartladder|smartladder7|gongmin700|qq325862401|kawaiiushio8|smartladderkoera|gonggongid10|kawaiiushio9|smartladderuk|smartladderhongkong|chrometieba|flowerwakawaii|feijida600|window8saiko|gfwdies|smartladdertaiwan|akb48daisukilove|smartladderus|diaoyudaobelongtochinasaiko|jianiwoxiangni
+smartladder8|sandaojushi3|ftencentuck|baidufirefoxtieba|chromeichi|aitaiyokani|smartladder3|smartladder4|chrome360q|smartladder6|goagent-dup001|kawaiiushioplus|smartladdercanada|gongongid02|goagent-dup003|goagent-dup002|gonggongid03|ippotsukobeta|gonggongid01|gonggongid07|gonggongid06|kawaiiushionoserve|gonggongid04|kawaiiushio2|chromelucky|gonggongid09|yanlun001|smartladderchina|smartladder1|kawaiiushio1|kawaiiushio6|kawaiiushio7|saosaiko|kawaiiushio5|smartladderjapan|bakajing600|sekaiwakerei|yugongxisaiko|gonggongid08|smartladder2|baiduchrometieba|kawaiiushio4|gonggongid05|bakabaka300|fangbingxingtodie|f360uck|chromesaiko|chromeqq|kawaiiushio|ilovesmartladder|smartladder7|gongmin700|qq325862401|kawaiiushio8|smartladderkoera|gonggongid10|kawaiiushio9|smartladderuk|smartladderhongkong|chrometieba|flowerwakawaii|feijida600|window8saiko|gfwdies|smartladdertaiwan|akb48daisukilove|smartladderus|diaoyudaobelongtochinasaiko|jianiwoxiangni|freegoagent160|freegoagent198|freegoagent205|freegoagent292|freegoagent334|freegoagent358|freegoagent494|freegoagent526|freegoagent547|freegoagent553|freegoagent576|freegoagent577|freegoagent578|freegoagent583|freegoagent585|freegoagent586|freegoagent591|freegoagent599|freegoagent603|freegoagent607|freegoagent616|freegoagent623|freegoagent624|freegoagent625|freegoagent628|freegoagent631|freegoagent633|freegoagent638|freegoagent641|freegoagent644|freegoagent650|freegoagent654|freegoagent655|freegoagent657|freegoagent666|freegoagent670|freegoagent671|freegoagent674|freegoagent685|freegoagent686|freegoagent698|freegoagent699|freegoagent701|freegoagent702|freegoagent703|freegoagent707|freegoagent710|freegoagent718|freegoagent730|freegoagent734|freegoagent737|freegoagent742|freegoagent744|freegoagent746|freegoagent753|freegoagent758|freegoagent760|freegoagent762|freegoagent766|freegoagent771|freegoagent773|freegoagent774|freegoagent777|freegoagent780|freegoagent781|freegoagent784|freegoagent785|freegoagent786|freegoagent789|freegoagent791|freegoagent793|freegoagent794|freegoagent799|freegoagent802|freegoagent807|freegoagent809|freegoagent810|freegoagent811|freegoagent812|freegoagent813|freegoagent818|freegoagent822|freegoagent825|freegoagent827|freegoagent828|freegoagent830|freegoagent831|freegoagent832|freegoagent836|freegoagent837|freegoagent840|freegoagent847|freegoagent851|freegoagent852|freegoagent855|freegoagent859|freegoagent861|freegoagent863|freegoagent866|freegoagent867|freegoagent870|freegoagent872|freegoagent874|freegoagent875|freegoagent876|freegoagent877|freegoagent879|freegoagent881|freegoagent889|freegoagent894|freegoagent898|freegoagent900|freegoagent905|freegoagent909|freegoagent910|freegoagent914|freegoagent915|freegoagent919|freegoagent923|freegoagent926|freegoagent927|freegoagent928|freegoagent929|freegoagent932|freegoagent934|freegoagent945|freegoagent949|freegoagent950|freegoagent951|freegoagent954|freegoagent956|freegoagent957|freegoagent958|freegoagent963|freegoagent965|freegoagent966|freegoagent968|freegoagent971|freegoagent972|freegoagent973|freegoagent974|freegoagent975|freegoagent976|freegoagent978|freegoagent981|freegoagent987|freegoagent993|freegoagent994|freegoagent998
 '''
 
 import ConfigParser, os, re, urlparse, os.path as ospath, random
@@ -613,11 +613,11 @@ def config():
     hosts_rules = RuleList({{!HOSTS_RULES}})
 %end #HOSTS_RULES
     unparse_netloc = import_from('utils')
-    def build_fake_url(type, host):
-        if (type == 'https' and host[1] != 80 or
-            host[1] % 1000 == 443): type, port = 'https', 443
-        else: type, port = 'http', 80
-        return '%s://%s/' % (type, unparse_netloc(host, port))
+    def build_fake_url(scheme, host):
+        if scheme == 'https' and host[1] != 80 or host[1] % 1000 == 443:
+            scheme, dport = 'https', 443
+        else: scheme, dport = 'http', 80
+        return '%s://%s/' % (scheme, unparse_netloc(host, dport))
 %if TARGET_PAAS:
     _HttpsFallback = ({{TARGET_PAAS}},)
 %if FALLBACK_RULES:
