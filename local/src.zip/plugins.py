@@ -148,7 +148,7 @@ def paas():
                     opener.close()
                     if isinstance(e, HTTPError):
                         errors.append(str(e))
-                        if e.code in (503, 404):
+                        if e.code in (503, 404, 403):
                             if e.code == 503:
                                 errors[-1] = 'Bandwidth Over Quota(%s)'%self.appids[0]
                             else:
