@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Wallproxy
+#请将下面路径中的home/dfc643/wallproxy替换成你wallproxy的位置
+Icon=/home/dfc643/wallproxy/local/misc/linux.png
+Exec=bash /home/dfc643/wallproxy/local/proxy.sh
+Path=/home/dfc643/wallproxy/local/
+Terminal=true
