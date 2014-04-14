@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>wallproxy - 已颁发证书</title>
+	<script src="js/jquery.js"></script>
+	<script src="/certs.js"></script>
+	<script type="text/javascript">
+$(document).ready(function(){
+	var colWidth = 300;
+	var cols = Math.floor(document.documentElement.clientWidth / colWidth);
+	if (cols == 0) cols = 1;
+	colWidth = Math.floor(100 / cols);
+	var cnt = WP_certs.length, idx = 0;
+	var rows = Math.ceil(cnt / cols);
+	var html = '<table border="0" width="100%">\n';
+	while (--rows >= 0) {
+		html += '\t<tr>\n';
+		for (var col=0; col < cols && idx < cnt; col++, idx++) {
+			html += '\t\t<td width="' +colWidth+ '%"><a href="/certs/';
+			html += WP_certs[idx]+ '">' +WP_certs[idx]+ '</a></td>\n';
+		}
+		html += '\t</tr>\n';
+	}
+	html += '</table>';
+	$('#certs_tbl').html(html);
+});
+	</script>
+</head>
+<body><div id="certs_tbl"></div></body>
