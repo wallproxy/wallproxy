@@ -8,7 +8,14 @@ smartladder8|sandaojushi3|ftencentuck|baidufirefoxtieba|chromeichi|aitaiyokani|s
 import ConfigParser, os, re, urlparse, os.path as ospath, random
 from cStringIO import StringIO
 
-rulefiles = lambda v:[v.replace(r'\n','\n') if v.startswith('string://') else v for v in v.split('|')]
+def rulefiles(v):
+    v = v.strip()
+    i = v.find('string://')
+    if i < 0:
+        return v.split('|')
+    if i == 0:
+        return [v.replace(r'\n', '\n')]
+    return v[:i-1].split('|') + [v[i:].replace(r'\n', '\n')]
 
 class Common(object):
     v = '''def %s(self, *a):
@@ -57,16 +64,17 @@ class Common(object):
     def __init__(self, INPUT):
         ConfigParser.RawConfigParser.OPTCRE = re.compile(r'(?P<option>[^=\s][^=]*)\s*(?P<vi>[=])\s*(?P<value>.*)$')
         CONFIG = self.CONFIG = ConfigParser.ConfigParser()
-        try:
-            CONFIG.read(INPUT)
-        except ConfigParser.MissingSectionHeaderError:
-            with open(INPUT, 'rb') as fp: v = fp.read()
-            v = v[v.find('['):]
+        for file in (INPUT, 'user.ini'):
             try:
-                with open(INPUT, 'wb') as fp: fp.write(v)
-            except IOError:
-                pass
-            CONFIG.readfp(StringIO(v), INPUT)
+                CONFIG.read(file)
+            except ConfigParser.MissingSectionHeaderError:
+                with open(file, 'rb') as fp: v = fp.read()
+                v = v[v.find('['):]
+                try:
+                    with open(file, 'wb') as fp: fp.write(v)
+                except IOError:
+                    pass
+                CONFIG.readfp(StringIO(v), file)
 
         self.LISTEN_IP          = self.get('listen', 'ip', '0.0.0.0')
         self.LISTEN_PORT        = self.getint('listen', 'port', 8086)
