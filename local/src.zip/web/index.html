@@ -14,6 +14,9 @@
 	<script src="js/codemirror/properties.js"></script>
 	<script src="js/my.js"></script>
 	<script src="/stat.js"></script>
+	<style type="text/css">
+		.nd {display:none !important;}
+	</style>
 </head>
 <body>
 <!-- Home -->
@@ -24,8 +27,7 @@
 			<!--li data-role="list-divider">普通模式</li>
 			<li><a href="#access" data-transition="slide">访问设置</a></li>
 			<li><a href="#gae" data-transition="slide">GAE设置</a></li>
-			<li><a href="#pac" data-transition="slide">PAC设置</a></li>
-			<li><a href="#save" data-transition="pop">保存&amp;应用</a></li-->
+			<li><a href="#pac" data-transition="slide">PAC设置</a></li-->
 			<li data-role="list-divider">高级模式</li>
 			<li><a href="#proxy_ini" data-transition="slide">配置文件(ini)</a></li>
 			<li><a href="#config_py" data-transition="slide">配置文件(py)</a></li>
@@ -45,7 +47,7 @@
 		<a data-role="button" data-rel="back" href="#home" data-icon="back" data-iconpos="left" class="ui-btn-left">返回</a>
 	</div>
 	<div data-role="content" style="padding: 15px"><center>
-		<p>版本：<script>WP.wriVer()</script></p>
+		<p>版本：<script>document.write(WP.version)</script></p>
 		<a data-role="button" data-inline="true" target="_blank" href="https://code.google.com/p/wallproxy/">教程</a>
 		<a data-role="button" data-inline="true" target="_blank" href="https://github.com/wallproxy/wallproxy/">更新</a>
 		<a data-role="button" data-inline="true" rel="external" href="/proxy.pac">自动代理脚本</a>
@@ -68,13 +70,13 @@
 	<div data-role="content" style="padding: 15px"></div>
 </div>
 <!-- Save -->
-<div data-role="dialog" id="save">
+<div data-role="dialog" id="alert_dlg">
 	<div data-role="header" data-theme="d">
-		<h1>保存&amp;应用</h1>
+		<h1 class="dlg_title"></h1>
 	</div>
 	<div data-role="content" data-theme="c">
-		<p>保存配置并重启程序？</p>
-		<a data-role="button" data-theme="b" id="restart_btn">确定</a>
+		<p class="dlg_msg"></p>
+		<a data-role="button" data-theme="b" class="dlg_ok">确定</a>
 		<a data-role="button" data-rel="back" data-theme="c">取消</a>
 	</div>
 </div>
@@ -82,7 +84,16 @@
 	<div data-theme="a" data-role="header">
 		<h3>{{title}}</h3>
 		<a data-role="button" data-rel="back" data-icon="back" data-iconpos="left" class="ui-btn-left">返回</a>
-		<a data-role="button" data-icon="check" data-iconpos="left" class="ui-btn-right save_btn">保存</a>
+		<div class="ui-btn-right">
+			<a href="#alert_dlg" data-transition="pop" class="alert_dlg nd"></a>
+			<a data-role="button" data-icon="check" data-iconpos="left" class="save_btn nd">保存</a>
+			<a data-role="button" data-icon="alert" data-iconpos="left" class="apply_btn">应用</a>
+		</div>
+	</div>
+	<div class="nd">
+		<select data-native-menu="false" class="file_choice">
+			<option>请选择文件</option>
+		</select>
 	</div>
 	<div data-role="content" style="padding: 15px"> 
 		<textarea class="code_box"></textarea>
@@ -110,7 +121,7 @@
 	<div data-theme="a" data-role="header">
 		<h3>升级提示</h3>
 	</div>
-	<div data-role="content" style="padding: 15px"><center>您正在使用wallproxy/<script>WP.wriVer()</script>，建议<a href="https://github.com/wallproxy/wallproxy">更新到最新版本</a>。</center></div>
+	<div data-role="content" style="padding: 15px"><center>您正在使用wallproxy/<script>document.write(WP.version)</script>，建议<a href="https://github.com/wallproxy/wallproxy">更新到最新版本</a>。</center></div>
 	<div data-role="footer" class="footer-docs" data-theme="c">
 		<p>&copy; 2009-2013 HustMoon Studio</p>
 	</div>
