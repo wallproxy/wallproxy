@@ -64,7 +64,7 @@ class Common(object):
     def __init__(self, INPUT):
         ConfigParser.RawConfigParser.OPTCRE = re.compile(r'(?P<option>[^=\s][^=]*)\s*(?P<vi>[=])\s*(?P<value>.*)$')
         CONFIG = self.CONFIG = ConfigParser.ConfigParser()
-        for file in (INPUT, 'user.ini'):
+        for file in (INPUT, ospath.join(ospath.dirname(INPUT), 'user.ini')):
             try:
                 CONFIG.read(file)
             except ConfigParser.MissingSectionHeaderError:
@@ -870,7 +870,7 @@ def make_config(INPUT=None, OUTPUT=None):
     config = Common(INPUT).__dict__
     # from pprint import pprint
     # pprint(config)
-    config['MTIME'] = int(os.stat(INPUT).st_mtime)
+    config['MTIME'] = 1 #int(os.stat(INPUT).st_mtime)
     code = SimpleTemplate(template).render(**config)
     # print code
     return tob(code), OUTPUT
