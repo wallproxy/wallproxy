@@ -69,14 +69,7 @@ function show_editor(div, title, file) {
 	});
 	return editor;
 }
-$(document).on('pagecreate', '#proxy_ini', function(){
-	show_editor($(this), '配置文件(ini)', '/proxy.ini');
-});
-$(document).on('pagecreate', '#config_py', function(){
-	show_editor($(this), '配置文件(py)', '/config.py');
-});
-$(document).on('pagecreate', '#userlist_ini', function(){
-	var div = $(this), files = WP.ini, file = 'userlist.ini';
+function files_editor(div, title, files, file, prefix) {
 	var i = files.length;
 	if (i == 0) {
 		files.push(file);
@@ -86,10 +79,11 @@ $(document).on('pagecreate', '#userlist_ini', function(){
 		}
 		if (i < 0) file = files[0];
 	}
-	var path = '/ini/' + file;
-	var editor = create_editor(div, '自定义规则', path);
+	var path = prefix + file;
+	var editor = create_editor(div, title, path);
 	div.on('pageshow', function(){
-		$.get(path+'?'+Math.random(), function(data){editor.setValue(data);});
+		$.get(path+'?'+Math.random(), function(data){editor.setValue(data);}).fail(
+			function(e){if(e.status == 404)editor.setValue('');});
 	});
 	div.find('.save_btn').removeClass('nd').click(function(){
 		save_file(path, editor.getValue('\r\n'));
@@ -106,8 +100,18 @@ $(document).on('pagecreate', '#userlist_ini', function(){
 	}
 	select.val(file);
 	select.change(function(){
-		path = '/ini/' + $(this).val();
-		$.get(path+'?'+Math.random(), function(data){editor.setValue(data);});
+		path = prefix + $(this).val();
+		$.get(path+'?'+Math.random(), function(data){editor.setValue(data);}).fail(
+			function(e){if(e.status == 404)editor.setValue('');});
 	});
+}
+$(document).on('pagecreate', '#proxy_ini', function(){
+	files_editor($(this), '配置文件(ini)', ['proxy.ini', 'user.ini'], 'proxy.ini', '/');
+});
+$(document).on('pagecreate', '#config_py', function(){
+	show_editor($(this), '配置文件(py)', '/config.py');
+});
+$(document).on('pagecreate', '#userlist_ini', function(){
+	files_editor($(this), '自定义规则', WP.ini, 'userlist.ini', '/ini/');
 });
 })();
