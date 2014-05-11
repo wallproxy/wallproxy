@@ -106,7 +106,7 @@ function files_editor(div, title, files, file, prefix) {
 	});
 }
 $(document).on('pagecreate', '#proxy_ini', function(){
-	files_editor($(this), '配置文件(ini)', ['proxy.ini', 'user.ini'], 'proxy.ini', '/');
+	files_editor($(this), '配置文件(ini)', ['proxy.ini', 'user.ini'], 'user.ini', '/');
 });
 $(document).on('pagecreate', '#config_py', function(){
 	show_editor($(this), '配置文件(py)', '/config.py');
