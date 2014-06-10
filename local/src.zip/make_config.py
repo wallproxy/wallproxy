@@ -31,35 +31,26 @@ class Common(object):
     def parse_pac_config(self):
         v = self.get('pac', 'py_default', '') or 'FORWARD'
         self.PY_DEFAULT = (v.split('|') * 3)[:3]
-        if self.PAC_FILE:
-            v = self.get('pac', 'default', '') or self._PAC_DEFAULT
-            self.PAC_DEFAULT = (v.split('|') * 3)[:3]
-        else:
-            self.PAC_DEFAULT = self.PY_DEFAULT
+        v = self.get('pac', 'default', '') or self._PAC_DEFAULT
+        self.PAC_DEFAULT = (v.split('|') * 3)[:3]
         def get_rule_cfg(key, default):
-            PAC_RULELIST = v = self.get('pac', key, default)
+            PAC = PY = []
+            v = self.get('pac', key, default)
             if v.startswith('!'):
-                if self.PAC_FILE:
-                    v = self.items(v.lstrip('!').strip(), ())
-                    v = [(rulefiles(v),k.upper()) for k,v in v if k and v]
-                else:
-                    v = self.items('py_'+v.lstrip('!').strip(), ())
-                    sp = {'FORBID':'False', 'WEB':'None'}
-                    v = [(rulefiles(v),sp.get(k.upper()) or k.upper()) for k,v in v if k and v]
-                PAC_RULELIST = v
+                t = self.items(v.lstrip('!').strip(), ())
+                PAC = [(rulefiles(t),k.upper()) for k,t in t if k and t]
+                v = self.items('py_'+v.lstrip('!').strip(), ())
+                sp = {'FORBID':'False', 'WEB':'None'}
+                PY = [(rulefiles(v),sp.get(k.upper()) or k.upper()) for k,v in v if k and v]
             elif v:
-                TARGET_PAC = self.TARGET_PAAS
-                if self.PAC_FILE:
-                    TARGET_PAC = self.TARGET_LISTEN
-                    if not TARGET_PAC:
-                        TARGET_PAC = '*:*'
-                    elif ':' not in TARGET_PAC:
-                        TARGET_PAC = '*:' + TARGET_PAC
-                    TARGET_PAC = 'PROXY %s;DIRECT' % TARGET_PAC
-                PAC_RULELIST = [(rulefiles(v), TARGET_PAC)]
-            return PAC_RULELIST
-        self.PAC_RULELIST = get_rule_cfg('rulelist', '')
-        self.PAC_IPLIST = get_rule_cfg('iplist', '')
+                t = self.TARGET_LISTEN
+                if not t: t = '*:*'
+                elif ':' not in t: t = '*:' + t
+                PAC = [(rulefiles(v), 'PROXY %s;DIRECT'%t)]
+                PY = [(rulefiles(v), self.TARGET_PAAS)]
+            return PAC, PY
+        self.PAC_RULELIST, self.PY_RULELIST = get_rule_cfg('rulelist', '')
+        self.PAC_IPLIST, self.PY_IPLIST = get_rule_cfg('iplist', '')
 
     def __init__(self, INPUT):
         ConfigParser.RawConfigParser.OPTCRE = re.compile(r'(?P<option>[^=\s][^=]*)\s*(?P<vi>[=])\s*(?P<value>.*)$')
@@ -191,12 +182,16 @@ class Common(object):
             for k,v in self.items('forward', ()):
                 self.HTTPS_TARGET[k.upper()] = '(%s)'%v if '"' in v or "'" in v else repr(v)
 
-        self.PAC_ENABLE = self.getboolean('pac', 'enable', True)
+        v = self.getint('pac', 'enable', 3)
+        self.PAC_ENABLE = 0 if v <= 0 else (3 if v >= 3 else v)
         v = self.getint('pac', 'https_mode', 2)
         self.PAC_HTTPSMODE = 0 if v <= 0 else (2 if v >= 2 else 1)
-        v = self.get('pac', 'file', '').replace('goagent', 'proxy')
+        v = self.get('pac', 'file', 'proxy.pac').replace('goagent', 'proxy')
         self.PAC_FILE = v and v.split('|')
+        if not v: self.PAC_ENABLE &= 1
         self.parse_pac_config()
+        if not (self.PAC_RULELIST or self.PY_RULELIST or self.PAC_IPLIST or self.PY_IPLIST):
+            self.PAC_ENABLE = 0
 
         self.GOOGLE_MODE        = self.get(GAE_PROFILE, 'mode', 'http')
         v = self.get(GAE_PROFILE, 'hosts', '')
@@ -276,12 +271,11 @@ class Common(object):
                 with open(ospath.join(ospath.dirname(INPUT), 'misc', v.lstrip('!').strip()), 'U') as fp:
                     v = fp.read()
             for p,r in eval(v): ''+p+r
-            self.REDIRECT_RULES = '(%s)'%v
+            self.REDIRECT_RULES = v
         except:
             self.REDIRECT_RULES = ''
 
         self.AUTORANGE_RULES    = (self.GAE_ENABLE or self.OLD_PLUGIN) and self.AUTORANGE_ENABLE and self.AUTORANGE_RULES
-        self.PAC_ENABLE         = (self.PAC_RULELIST or self.PAC_IPLIST) and self.PAC_ENABLE and 'PAC_ENABLE'
         self.GOOGLE_WITHGAE     = False
         if self.TARGET_PAAS and self.GOOGLE_SITES and not self.GLOBAL_PROXY:
             self.GOOGLE_WITHGAE = ' \n '.join([(i if '/' in i else '||%s'%i.lstrip('.')) for i in GOOGLE_WITHGAE])
@@ -290,7 +284,7 @@ class Common(object):
                 self.HOSTS_RULES = ' \n '.join((self.HOSTS_RULES, v))
             else:
                 self.HOSTS_RULES.append('string://' + v)
-        self.NEED_PAC           = self.GOOGLE_FORCEHTTPS or self.USERAGENT_RULES or self.FALLBACK_RULES or self.AUTORANGE_RULES or self.CRLF_RULES or self.HOSTS_RULES or self.GOOGLE_WITHGAE or self.PAC_ENABLE
+        self.NEED_PAC           = self.GOOGLE_FORCEHTTPS or self.USERAGENT_RULES or self.FALLBACK_RULES or self.AUTORANGE_RULES or self.CRLF_RULES or self.HOSTS_RULES or self.GOOGLE_WITHGAE
 
 
 def tob(s, enc='utf-8'):
@@ -582,13 +576,14 @@ def config():
 %HTTPS_TARGET[n] = 'None'
 %end
 %end #OLD_PLUGIN
-%if NEED_PAC:
+%if NEED_PAC or PAC_ENABLE:
 
     PacFile, RuleList, HostList = import_from('pac')
     def apnic_parser(data):
         from re import findall
         return '\n'.join(findall(r'(?i)\|cn\|ipv4\|((?:\d+\.){3}\d+\|\d+)\|', data))
 %PAC_IPLIST = [('[%s]'%(', '.join(('(%r, apnic_parser)'%i) if 'delegated-apnic-latest' in i else repr(i) for i in v)),t) for v,t in PAC_IPLIST]
+%PY_IPLIST = [('[%s]'%(', '.join(('(%r, apnic_parser)'%i) if 'delegated-apnic-latest' in i else repr(i) for i in v)),t) for v,t in PY_IPLIST]
 %end #NEED_PAC
 %if GOOGLE_FORCEHTTPS:
     forcehttps_sites = RuleList({{!GOOGLE_FORCEHTTPS}})
@@ -651,8 +646,7 @@ def config():
 %end
 %PY_DEFAULT = (([v for v in PY_DEFAULT if v in HTTPS_TARGET] or ['FORWARD']) * 3)[:3]
 %if PAC_ENABLE:
-%if PAC_FILE:
-%NEED_PAC = NEED_PAC != 'PAC_ENABLE'
+%if PAC_ENABLE & 2:
 
     rulelist = (
 %for k,v in PAC_RULELIST:
@@ -665,38 +659,38 @@ def config():
 %end #PAC_IPLIST
     )
     PacFile(rulelist, iplist, {{!PAC_FILE}}, {{!PAC_DEFAULT}})
-%else:
-%PAC_DEFAULT = PY_DEFAULT
-%PAC_RULELIST = [(k,v) for k,v in PAC_RULELIST if v in HTTPS_TARGET]
-%PAC_IPLIST = [(k,v) for k,v in PAC_IPLIST if v in HTTPS_TARGET]
-%PAC_ENABLE = PAC_RULELIST or PAC_IPLIST
-%NEED_PAC = NEED_PAC != 'PAC_ENABLE' or PAC_ENABLE
-%if PAC_RULELIST:
+%end
+%if PAC_ENABLE & 1:
+%PY_RULELIST = [(k,v) for k,v in PY_RULELIST if v in HTTPS_TARGET]
+%PY_IPLIST = [(k,v) for k,v in PY_IPLIST if v in HTTPS_TARGET]
+%if not (PY_RULELIST or PY_IPLIST): PAC_ENABLE &= 2
+%NEED_PAC = NEED_PAC or (PAC_ENABLE & 1)
+%if PY_RULELIST:
 
     rulelist = (
-%for k,v in PAC_RULELIST:
+%for k,v in PY_RULELIST:
         (RuleList({{!k}}), {{v}}),
-%end #PAC_RULELIST
+%end #PY_RULELIST
     )
 %if PAC_HTTPSMODE == 2:
     httpslist = (
-%for i,k in enumerate(PAC_RULELIST):
+%for i,k in enumerate(PY_RULELIST):
         (rulelist[{{i}}][0], {{HTTPS_TARGET[k[1]]}}),
-%end #PAC_RULELIST
+%end #PY_RULELIST
     )
 %end #PAC_HTTPSMODE
-%end #PAC_RULELIST
-%if PAC_IPLIST:
+%end #PY_RULELIST
+%if PY_IPLIST:
     IpList, makeIpFinder = import_from('pac')
     iplist = (
-%for k,v in PAC_IPLIST:
+%for k,v in PY_IPLIST:
         (IpList({{k}}), {{v}}),
-%end #PAC_IPLIST
+%end #PY_IPLIST
     )
-    findHttpProxyByIpList = makeIpFinder(iplist, [{{', '.join(PAC_DEFAULT)}}])
-    findHttpsProxyByIpList = makeIpFinder(iplist, [{{', '.join([HTTPS_TARGET[v] for v in PAC_DEFAULT])}}])
-%end #PAC_IPLIST
-%end #PAC_FILE
+    findHttpProxyByIpList = makeIpFinder(iplist, [{{', '.join(PY_DEFAULT)}}])
+    findHttpsProxyByIpList = makeIpFinder(iplist, [{{', '.join([HTTPS_TARGET[v] for v in PY_DEFAULT])}}])
+%end #PY_IPLIST
+%end #PAC & 1
 %end #PAC_ENABLE
 %if THIRD_APPS or DNS_CONFIG_FILE:
 
@@ -817,13 +811,13 @@ not needhttps and \\
 hosts_rules.match(url, host):
                 return FORWARD
 %end
-%if PAC_ENABLE and not PAC_FILE:
-%if PAC_RULELIST:
+%if PAC_ENABLE & 1:
+%if PY_RULELIST:
             for rule,target in rulelist:
                 if rule.match(url, host):
                     return target
 %end
-%if PAC_IPLIST:
+%if PY_IPLIST:
             return findHttpProxyByIpList(host)
 %else:
             return {{PY_DEFAULT[0]}}
@@ -839,14 +833,14 @@ hosts_rules.match(url, host):
 %end
         if truehttps_sites.match(host): return FORWARD
 %end
-%if PAC_ENABLE and not PAC_FILE and PAC_HTTPSMODE == 2:
-%if PAC_RULELIST:
+%if (PAC_ENABLE & 1) and PAC_HTTPSMODE == 2:
+%if PY_RULELIST:
         url = build_fake_url(proxy_type, (host, port))
         for rule,target in httpslist:
             if rule.match(url, host):
                 return target
 %end
-%if PAC_IPLIST:
+%if PY_IPLIST:
         return findHttpsProxyByIpList(host)
 %else:
         return {{HTTPS_TARGET[PY_DEFAULT[0]]}}
