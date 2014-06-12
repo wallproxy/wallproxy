@@ -6,7 +6,6 @@ else
 	DIR=$0
 fi
 DIR=`dirname "$DIR"`
-python2 "$DIR/startup.py" "$DIR/pac" proxy.pac >/dev/null 2>&1 &
 SID=`ps -p $$ -o sid --no-headers`
 if [ "$SID" = "$$" ]; then
 	python2 "$DIR/startup.py" &
