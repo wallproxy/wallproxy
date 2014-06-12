@@ -3,15 +3,17 @@ import sys; from cStringIO import StringIO
 stdout, sys.stdout = sys.stdout, StringIO()
 listen_port = 0
 def config():
-    import sys, os, os.path as ospath, urllib
+    import sys, os, os.path as ospath, urllib, make_config
     set_dns, set_hosts = import_from('util')
+    ini = ospath.join(make_config.__file__, '../../proxy.ini')
+    ini = make_config.Common(ini)
+    if ini.REMOTE_DNS: eval('set_dns(%s)'%ini.REMOTE_DNS)
+    set_hosts('.google.com', ini.GOOGLE_HOSTS)
     sys.stdout = config['stdout']
     del sys.argv[0]; sys.modules.pop('google', None)
     dir = ospath.abspath(ospath.dirname(__file__))
     os.chdir(dir)
     sys.path.insert(0, ospath.join(dir, 'uploader.zip'))
-    set_dns('8.8.8.8')
-    set_hosts('.google.com', 'www.google.com www.google.com.hk mail.google.com')
     proxy = raw_input('Set proxy? (0)No  (1)127.0.0.1:8087  (Other)Your input\nIf 127.0.0.1:8087, make sure your wallproxy is running: ').strip()
     proxy = '' if proxy == '0' else ('127.0.0.1:8087' if proxy == '1' else proxy)
     if proxy: print('Upload with proxy %r' % proxy)
