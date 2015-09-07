@@ -646,4 +646,22 @@ def misc():
                     return lambda req: req.send_error(301, '', loc)
         return handler
 
-    globals().update(Page=Page, Redirects=Redirects)
+    def LocalHandle(FORWARD):
+        import re
+        def build_new_request(req, body):
+            req.content_length = len(body)
+            req.headers['Content-Length'] = str(req.content_length)
+            def fake(old):
+                def read_body():
+                    req.content_length = 0
+                    req.read_body = old
+                    return body
+                return read_body
+            req.read_body = fake(req.read_body)
+        def handler(req):
+            if 0:
+                build_new_request(req, req.read_body())
+            return FORWARD(req)
+        return handler
+
+    globals().update(Page=Page, Redirects=Redirects, LocalHandle=LocalHandle)
