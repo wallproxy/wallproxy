@@ -67,8 +67,8 @@ def paas():
         scheme = kw.get('scheme', 'http').lower()
         if scheme not in ('http', 'https'):
             raise ValueError('invalid scheme: '+scheme)
-        self.url = URLInfo('%s://%s.appspot.com%s?' % (
-            scheme, self.appids[0], kw.get('path', '/fetch.py')))
+        self.url = URLInfo('%s://%s%s?' % (scheme, v[0] if '.' in v[0]
+            else '%s.appspot.com' % v[0], kw.get('path', '/fetch.py')))
         self.password = kw.get('password', '')
         v = kw.get('proxy', 'default')
         self.proxy = config.global_proxy if v == 'default' else Proxy(v)
@@ -164,8 +164,9 @@ def paas():
                             else:
                                 si += 1
                                 self.appids.append(self.appids.pop(0)); flag |= 1
-                                url.hostname = '%s.appspot.com' % self.appids[0]
-                                print 'GAE: switch appid to %s' % self.appids[0]
+                                v = self.appids[0]
+                                url.hostname = v if '.' in v else '%s.appspot.com'%v
+                                print 'GAE: switch appid to %s' % v
                         elif e.code == 502:
                             if url.scheme != 'https':
                                 ti -= 1
@@ -379,7 +380,8 @@ def paas():
             return tasks, task_size, info, write_content
 
         def _range_thread(self, server, params, tasks, lock, info, write_content):
-            server = URLInfo(self.url, hostname='%s.appspot.com' % server)
+            server = URLInfo(self.url,
+                hostname=server if '.' in server else '%s.appspot.com' % server)
             ct = params[0].copy()
             ct['headers'] = headers = HeaderDict(ct['headers'])
             params = ct, params[1]
@@ -647,7 +649,28 @@ def misc():
         return handler
 
     def LocalHandle(FORWARD):
-        import re
+        import re, gzip
+        from cStringIO import StringIO
+        def hack_response1(FORWARD, req):
+            ctx = {}
+            data = []
+            bak = req.start_response, req.socket.sendall
+            def start_response(code, headers, message=None):
+                ctx['code'] = code
+                ctx['headers'] = headers
+                ctx['message'] = message
+            def sendall(d):
+                data.append(d)
+            req.start_response = start_response
+            req.socket.sendall = sendall
+            FORWARD(req)
+            req.start_response, req.socket.sendall = bak
+            ctx['data'] = ''.join(data)
+            return ctx
+        def hack_response2(ctx, req):
+            ctx['headers']['Content-Length'] = str(len(ctx['data']))
+            req.start_response(ctx['code'], ctx['headers'], ctx['message'])
+            req.socket.sendall(ctx['data'])
         def build_new_request(req, body):
             req.content_length = len(body)
             req.headers['Content-Length'] = str(req.content_length)
@@ -663,5 +686,22 @@ def misc():
                 build_new_request(req, req.read_body())
             return FORWARD(req)
         return handler
+
+    def WebExtra():
+        misc_dir = utils.misc_dir
+        @config.web_register.append
+        def web_register(WebHeader, HTTPError, WebHandler, web_handler, web_error,
+                         main_dir, send_static_file, send_web_file):
+            web_root = os.path.join(misc_dir, 'web')
+            reg = web_handler(r'(https?://.*?(?:youku|qiyi|iqiyi|letv|sohu|ku6|ku6cdn|pps)\.(?:com|tv))/.*')([])
+            @reg('/(.+)')
+            def handler(web, file):
+                return send_static_file(web, web_root, file)
+
+            reg = web_handler(r'(http://cdn\.aixifan\.com)/.*')([])
+            @reg('/player/sslhomura/AcNewPlayer\d+.swf')
+            def handler(web):
+                return send_static_file(web, web_root, 'flashes/AcPlayer201412121_D.swf')
+    WebExtra()
 
     globals().update(Page=Page, Redirects=Redirects, LocalHandle=LocalHandle)

@@ -2297,7 +2297,7 @@ def main():
                             fp.close(); break
                         data = re.search(r'(?ms)var list = new Array\((.+?)\);', data).group(1)
                     else:
-                        url = ospath.join(misc_dir, 'gcc.dat')
+                        url = ospath.join(misc_dir, 'ggc.dat')
                         date = datetime.utcfromtimestamp(_os.stat(url).st_mtime
                             ).strftime('%a, %d %b %Y %H:%M:%S GMT')
                         if backup.get('mtime') == date:
@@ -2309,14 +2309,14 @@ def main():
                     for ip,min,max in data:
                         for i in xrange(int(min), int(max)+1):
                             iplist.add(ip + str(i))
-                    info('GCC iplist: count=%d mtime=%s\n' % (len(iplist), date))
+                    info('GGC iplist: count=%d mtime=%s\n' % (len(iplist), date))
                     backup['iplist'] = _check_google_ip(iplist)[0]
                     backup['mtime'] = date
                     cache_set('google_ip', backup)
                     break
                 except Exception:
                     pass
-            info('GCC iplist: count=%d after first filter\n' % len(backup.get('iplist', ())))
+            info('GGC iplist: count=%d after first filter\n' % len(backup.get('iplist', ())))
             return backup
 
         def _common_reduce(iplist, port):
@@ -2382,7 +2382,7 @@ def main():
                     while bad and len(ok) >= oklen:
                         ok, bad = _check_google_ip(ok)
                     if not ok: ok, bad = bad, ok
-                    info('GCC iplist: count=%d after final filter\n' % len(ok))
+                    info('GGC iplist: count=%d after final filter\n' % len(ok))
                     backup['ok'] = ok; backup['bad'] = bad
                     cache_set('google_ip', backup)
                 elif oklen > 1:
@@ -3865,7 +3865,7 @@ def main():
             _save_pac(rules, iplist, '// ' + '\n// '.join(infos), files, default, resolve)
 
         def _save_pac(rules, iplist, info, files, default, resolve):
-            resolve = '' if resolve else '&&(ip||0<=host.indexOf(\':\')||/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host))'
+            resolve = '' if resolve else '&&(ip||host.indexOf(\':\')>=0||/^(?:\d{1,3}\.){3}\d{1,3}$/.test(host))'
             start = ('// AUTO-GENERATED RULES WITH wallproxy BY HustMoon'
                 ', DO NOT MODIFY!')
             end = '// END OF AUTO-GENERATED RULES'
