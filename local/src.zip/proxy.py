@@ -3,7 +3,7 @@ from __future__ import with_statement
 
 __author__ = 'd3d3LmVodXN0QGdtYWlsLmNvbQ=='.decode('base64')
 if '__version__' not in globals():
-    __version__ = '2.2.6'
+    __version__ = '2.2.7'
 
 def main():
     # imports
@@ -480,14 +480,14 @@ def main():
             if ospath.isfile(file):
                 _os.remove(file)
 
-    def _createKeyPair(type=None, bits=1024):
+    def _createKeyPair(type=None, bits=2048):
         if type is None:
             type = crypto.TYPE_RSA
         pkey = crypto.PKey()
         pkey.generate_key(type, bits)
         return pkey
 
-    def _createCertRequest(pkey, subj, digest='sha1'):
+    def _createCertRequest(pkey, subj, digest='sha256'):
         req = crypto.X509Req()
         subject = req.get_subject()
         for k,v in subj:
@@ -496,7 +496,7 @@ def main():
         req.sign(pkey, digest)
         return req
 
-    def _createCertificate(req, issuerKey, issuerCert, serial, digest='sha1'):
+    def _createCertificate(req, issuerKey, issuerCert, serial, sans=(), digest='sha256'):
         isCA = req is issuerCert
         cert = crypto.X509()
         cert.set_version(2)
@@ -510,8 +510,8 @@ def main():
         cert.set_issuer(issuerCert.get_subject())
         cert.set_subject(req.get_subject())
         cert.set_pubkey(req.get_pubkey())
+        X509Extension = crypto.X509Extension
         if isCA: # CA
-            X509Extension = crypto.X509Extension
             exts = [
                 X509Extension('basicConstraints', True, 'CA:TRUE'),
                 X509Extension('keyUsage', True, 'digitalSignature,keyCertSign,cRLSign'),
@@ -527,15 +527,19 @@ def main():
                 cert.add_extensions([
                     X509Extension('authorityKeyIdentifier', False, 'keyid:always', issuer=cert),
                 ])
+        else:
+            cert.add_extensions([
+                X509Extension('subjectAltName', True, ', '.join('DNS: %s' % x for x in sans))
+            ])
         cert.sign(issuerKey, digest)
         return cert
 
     def _makeCA(dump=True):
         pkey = _createKeyPair(bits=2048)
-        subj = (('countryName', 'CN'), ('stateOrProvinceName', 'Internet'),
+        subj = [('countryName', 'CN'), ('stateOrProvinceName', 'Internet'),
                 ('localityName','ChinaNet'), ('organizationName', 'WallProxy'),
                 ('organizationalUnitName', 'WallProxy Root'),
-                ('commonName', 'WallProxy CA'))
+                ('commonName', 'WallProxy CA')]
         req = _createCertRequest(pkey, subj)
         cert = _createCertificate(req, pkey, req, 0)
         if dump:
@@ -545,12 +549,21 @@ def main():
 
     def _makeCert(host, (cakey, cacrt), serial, dump=True):
         pkey = _createKeyPair()
-        subj = (('countryName', 'CN'), ('stateOrProvinceName', 'Internet'),
-                ('localityName','ChinaNet'), ('organizationName', host),
-                ('organizationalUnitName', 'WallProxy Branch'),
-                ('commonName', host))
+        subj = [('countryName', 'CN'), 
+                ('stateOrProvinceName', 'Internet'),
+                ('localityName','ChinaNet'),
+                ('organizationalUnitName','WallProxy Branch')]
+        sans = ()
+        if host[0] == '.':
+            subj.append(('commonName', '*' + host),
+                        ('organizationName', '*' + host))
+            sans = ['*'+host] + [x for x in sans if x != host]
+        else:
+            subj.append(('commonName', host),
+                        ('organizationName', host))
+            sans = [host] + [x for x in sans if x != host]
         req = _createCertRequest(pkey, subj)
-        cert = _createCertificate(req, cakey, cacrt, serial)
+        cert = _createCertificate(req, cakey, cacrt, serial, sans)
         if dump:
             pkey = crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey)
             cert = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
